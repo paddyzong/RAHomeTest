@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const FileUpload = ({ setData }) => {
+const FileUpload = ({ setFileUrl }) => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
 
@@ -24,10 +24,10 @@ const FileUpload = ({ setData }) => {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
     //const response = await axios.post('/core/process/');
-
       console.log(response.data);
-      setData(response.data);
+      setFileUrl(response.data.file_url);
     } catch (err) {
+      console.log(err)
       setError('File upload failed.');
     }
   };

@@ -7,10 +7,18 @@ from rest_framework import status
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
+import json
 import os
 # Create your views here.
-def process(filename):
-    df = pd.read_csv('sample_data.csv')
+def process(request):
+    data = json.loads(request.body)  # Parse JSON data
+    fileUrl = data.get('fileUrl', None)
+    types = data.get('types', None)
+    print("fileUrl:", fileUrl)
+    print("types:", types)
+    file_path = os.path.join(settings.MEDIA_ROOT,fileUrl) 
+    print(file_path)
+    df = pd.read_csv(file_path)
     print("Data types before inference:")
     print(df.dtypes)
 
@@ -18,7 +26,7 @@ def process(filename):
 
     print("\nData types after inference:")
     print(df.dtypes)
-    json_data = df.to_json(orient="records")
+    json_data = df.to_json(orient="records", date_format="iso")
 
     # Return JSON response
     return JsonResponse(json_data, safe=False)
@@ -34,12 +42,9 @@ def upload(request):
             file_path = os.path.join('uploads', file.name)  # Subdirectory 'uploads' inside MEDIA_ROOT
             path = default_storage.save(file_path, ContentFile(file.read()))
 
-            # Build the full file URL
-            file_url = request.build_absolute_uri(settings.MEDIA_URL + path)
-            print(file_url)
             return JsonResponse({
                 "message": "File uploaded successfully",
-                "file_url": file_url,
+                "file_url": path,
             }, status=status.HTTP_201_CREATED)
 
         except Exception as e:

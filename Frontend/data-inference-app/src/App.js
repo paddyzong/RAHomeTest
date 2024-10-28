@@ -6,20 +6,27 @@ import SubmitButton from './components/SubmitButton';
 const App = () => {
   const [data, setData] = useState(null);
   const [types, setTypes] = useState(null);
-
-  const handleSetData = (responseData) => {
-    setData(responseData.data);       // Raw data
-    setTypes(responseData.types);     // Inferred types
+  const [fileUrl, setFileUrl] = useState("");
+  console.log(fileUrl)
+  const handleFileUrlChange = (newUrl) => {
+    setFileUrl(newUrl);
+  };
+  const handleSetData = (data) => {
+    console.log(111);
+    console.log(data[0]);
+    console.log(Object.keys(data[0]));
+    setData(data);       // Raw data
+    setTypes(Object.keys(data[0]));     // Inferred types
   };
 
   return (
     <div>
       <h1>Data Type Inference App</h1>
-      <FileUpload setData={handleSetData} />
-      {data && types && (
+      <FileUpload setFileUrl={handleFileUrlChange} />
+      {fileUrl && (
         <>
           <DataTable data={data} types={types} setTypes={setTypes} />
-          <SubmitButton data={data} types={types} />
+          <SubmitButton data={data} types={types} fileUrl={fileUrl} setData={handleSetData} />
         </>
       )}
     </div>

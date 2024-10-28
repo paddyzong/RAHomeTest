@@ -4,7 +4,7 @@ const DataTable = ({ data, types, setTypes }) => {
   if (!data || !types) {
     return <p>No data available. Please upload a file.</p>;
   }
-
+  const columns = Object.keys(data[0]);
   const handleTypeChange = (column, newType) => {
     const updatedTypes = { ...types, [column]: newType };
     setTypes(updatedTypes);
@@ -15,7 +15,7 @@ const DataTable = ({ data, types, setTypes }) => {
       <table>
         <thead>
           <tr>
-            {Object.keys(data[0]).map((column) => (
+            {Object.keys(columns).map((column) => (
               <th key={column}>
                 {column} <br />
                 <select
