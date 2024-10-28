@@ -14,8 +14,6 @@ def process(request):
     data = json.loads(request.body)  # Parse JSON data
     fileUrl = data.get('fileUrl', None)
     types = data.get('types', None)
-    print("fileUrl:", fileUrl)
-    print("types:", types)
     file_path = os.path.join(settings.MEDIA_ROOT,fileUrl) 
     print(file_path)
     df = pd.read_csv(file_path)
@@ -26,10 +24,28 @@ def process(request):
 
     print("\nData types after inference:")
     print(df.dtypes)
-    json_data = df.to_json(orient="records", date_format="iso")
+    df_copy = df.copy()
+    datetime_cols = df_copy.select_dtypes(include=['datetime64[ns]']).columns
 
+    # Apply formatting function only to datetime columns
+    for col in datetime_cols:
+        df_copy[col] = df_copy[col].apply(format_date_based_on_precision)
+
+    #    Convert the modified DataFrame to JSON
+    json_data = df_copy.to_dict(orient="records")
+    #print(json_data)
+    data_type_mapping = {
+    'object': 'Text',
+    'int64': 'Integer',
+    'float64': 'Decimal',
+    'bool': 'Boolean',
+    'datetime64[ns]': 'Date',
+    'timedelta[ns]': 'Duration',
+    'category': 'Category'
+    }   
+    column_types = [data_type_mapping.get(dtype, "Unknown") for dtype in df.dtypes.astype(str)]
     # Return JSON response
-    return JsonResponse(json_data, safe=False)
+    return JsonResponse({"data":json_data,"types":column_types}, safe=False)
 
 def upload(request):
         file = request.FILES["file"]
@@ -70,3 +86,13 @@ def infer_and_convert_data_types(df):
             df[col] = pd.Categorical(df[col])
 
     return df
+
+def format_date_based_on_precision(dt):
+    if pd.isnull(dt):
+        return None  # Handle missing (NaN) dates
+    if dt.hour == 0 and dt.minute == 0 and dt.second == 0 and dt.microsecond == 0:
+        return dt.strftime("%Y-%m-%d")  # Only date part if there's no time information
+    elif dt.microsecond == 0:
+        return dt.strftime("%Y-%m-%d %H:%M")  # Date and hour:minute if no microseconds
+    else:
+        return dt.strftime("%Y-%m-%d %H:%M:%S.%f")  # Full datetime with microseconds

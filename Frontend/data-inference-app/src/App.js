@@ -12,21 +12,21 @@ const App = () => {
     setFileUrl(newUrl);
   };
   const handleSetData = (data) => {
-    console.log(111);
-    console.log(data[0]);
-    console.log(Object.keys(data[0]));
+    console.log("setdata");
+    console.log(data);
     setData(data);       // Raw data
-    setTypes(Object.keys(data[0]));     // Inferred types
+  };
+  const handleSetTypes = (types) => {
+    setTypes(types);       // Raw data
   };
 
   return (
     <div>
-      <h1>Data Type Inference App</h1>
       <FileUpload setFileUrl={handleFileUrlChange} />
       {fileUrl && (
         <>
           <DataTable data={data} types={types} setTypes={setTypes} />
-          <SubmitButton data={data} types={types} fileUrl={fileUrl} setData={handleSetData} />
+          <SubmitButton data={data} types={types} fileUrl={fileUrl} setData={handleSetData} setTypes={handleSetTypes}/>
         </>
       )}
     </div>

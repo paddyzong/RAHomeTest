@@ -1,16 +1,19 @@
 import React from 'react';
 import axios from 'axios';
 
-const SubmitButton = ({ data, types, fileUrl, setData }) => {
+const SubmitButton = ({ data, types, fileUrl, setData, setTypes }) => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post('/core/process/', { fileUrl, types });
       //console.log(response);
-      const parsedArray = JSON.parse(response.data);
-      console.log(parsedArray);
-      setData(parsedArray)
+      const jsonData = response.data.replace(/NaN/g, "null");
+      const parsedArray = JSON.parse(jsonData);
+      console.log(parsedArray.data);
+      setData(parsedArray.data)
+      setTypes(parsedArray.types)
       alert('Data processed successfully!');
     } catch (err) {
+      console.log(err)
       alert('Failed to process data.');
     }
   };
