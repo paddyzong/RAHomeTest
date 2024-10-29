@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const FileUpload = ({ setFileUrl }) => {
+const FileUpload = ({ setFileUrl, resetFile }) => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setError('');
+    resetFile();
   };
 
   const handleUpload = async () => {
@@ -23,8 +24,8 @@ const FileUpload = ({ setFileUrl }) => {
       const response = await axios.post('/core/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-    //const response = await axios.post('/core/process/');
-      console.log(response.data);
+      //const response = await axios.post('/core/process/');
+      //console.log(response.data);
       setFileUrl(response.data.file_url);
     } catch (err) {
       console.log(err)

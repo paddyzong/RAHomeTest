@@ -7,7 +7,8 @@ const App = () => {
   const [data, setData] = useState(null);
   const [types, setTypes] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
-  console.log(fileUrl)
+  const [showTypeSelectors, setShowTypeSelectors] = useState(false);
+  //console.log(fileUrl)
   const handleFileUrlChange = (newUrl) => {
     setFileUrl(newUrl);
   };
@@ -19,14 +20,22 @@ const App = () => {
   const handleSetTypes = (types) => {
     setTypes(types);       // Raw data
   };
-
+  const toggleTypeSelectors = () => {
+    setShowTypeSelectors((prev) => !prev);
+  };
+  const handleFileReset = () => {
+    setData(null);
+    setFileUrl(null);
+    setTypes(null);
+    setShowTypeSelectors(false);
+  };
   return (
     <div>
-      <FileUpload setFileUrl={handleFileUrlChange} />
+      <FileUpload setFileUrl={handleFileUrlChange} resetFile={handleFileReset}/>
       {fileUrl && (
         <>
-          <DataTable data={data} types={types} setTypes={setTypes} />
-          <SubmitButton data={data} types={types} fileUrl={fileUrl} setData={handleSetData} setTypes={handleSetTypes}/>
+          <DataTable data={data} types={types} setTypes={setTypes} showTypeSelectors={showTypeSelectors} toggleTypeSelectors={toggleTypeSelectors}/>
+          <SubmitButton data={data} types={types} fileUrl={fileUrl} setData={handleSetData} setTypes={handleSetTypes} showTypeSelectors={showTypeSelectors} />
         </>
       )}
     </div>
