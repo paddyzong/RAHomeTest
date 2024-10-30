@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const DataTable = ({ data, types, setTypes, showTypeSelectors, toggleTypeSelectors }) => {
-  //const [showTypeSelectors, setShowTypeSelectors] = useState(false);
-
-  if (!data || !types) {
-    return <p>The file has been uploaded. Click process to infer types.</p>;
+const DataTable = ({ data, types, message, setTypes, showTypeSelectors, toggleTypeSelectors }) => {
+const isNotBlank = (str) => str && str.trim().length > 0;
+  if (isNotBlank(message)) {
+    return <p>{message}</p>;
   }
 
   const handleTypeChange = (idx, newType) => {
@@ -14,10 +13,6 @@ const DataTable = ({ data, types, setTypes, showTypeSelectors, toggleTypeSelecto
     console.log(newType)
     setTypes(updatedTypes);
   };
-
-  // const handleToggle = () => {
-  //   setShowTypeSelectors(!showTypeSelectors);
-  // };
 
   return (
     <div>

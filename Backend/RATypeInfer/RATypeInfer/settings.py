@@ -70,6 +70,10 @@ TEMPLATES = [
     },
 ]
 
+REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "RATypeInfer.exceptions.custom_exception_handler",
+}
+
 WSGI_APPLICATION = 'RATypeInfer.wsgi.application'
 
 
