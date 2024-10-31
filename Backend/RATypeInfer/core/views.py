@@ -110,6 +110,11 @@ def process(request):
     column_types = [data_type_mapping.get(dtype, "Unknown") for dtype in df.dtypes.astype(str)]
     # Return JSON response
     return JsonResponse({"data":json_data,"types":column_types}, safe=False)
+    return JsonResponse({
+    "fileUrl": "processed_data.json",
+    "types": column_types,
+    "total_records": len(df)
+    }, safe=False)
 
 def upload(request):
         file = request.FILES["file"]
@@ -129,4 +134,35 @@ def upload(request):
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+def view_data(request):
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('page_size', 50))
+    fileUrl = request.GET.get('fileUrl', None)
+
+    if not fileUrl:
+        return JsonResponse({"error": "fileUrl is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    file_path = os.path.join(settings.MEDIA_ROOT, fileUrl)
+
+    try:
+        with open(file_path, "r") as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        return JsonResponse({"error": "Processed data file not found."}, status=status.HTTP_404_NOT_FOUND)
+    except json.JSONDecodeError:
+        return JsonResponse({"error": "Error decoding data file."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    total_pages = (len(data) + page_size - 1) // page_size
+    start = (page - 1) * page_size
+    paginated_data = data[start:start + page_size]
+
+    return JsonResponse({
+        "data": paginated_data,
+        "page": page,
+        "page_size": page_size,
+        "total_pages": total_pages,
+        "total_records": len(data)
+    })
+
 

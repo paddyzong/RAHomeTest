@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import traceback
+import time
 
 def infer_and_convert_data_types(df, desired_types=None):
     if desired_types is None:
@@ -45,10 +46,27 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
                 return pd.to_numeric(column, errors='coerce').astype('float64')
 
     # Try converting to datetime
-    datetime_column = pd.to_datetime(column_no_na, errors='coerce')
-    datetime_non_na_ratio = datetime_column.notnull().mean()
-    if datetime_non_na_ratio >= non_na_ratio:
-        return pd.to_datetime(column, errors='coerce')
+    # Print row indices where the conversion resulted in NaT (null)
+    # print(f"Processing column: {column.name}")
+    # null_rows = datetime_column[datetime_column.isnull()]
+    # print("Rows with null datetime values:\n", null_rows.index.tolist())
+        
+    # # Print row indices where the conversion was successful
+    # non_null_rows = datetime_column[datetime_column.notnull()]
+    # print("Rows with non-null datetime values:\n", non_null_rows.index.tolist())
+    # print(datetime_non_na_ratio)
+    datetime_column_dayfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=True)
+    datetime_non_na_ratio_dayfirst = datetime_column_dayfirst.notnull().mean()
+    
+    if datetime_non_na_ratio_dayfirst >= non_na_ratio:
+        return pd.to_datetime(column, errors='coerce', dayfirst=True)
+    
+    # Fallback: Attempt conversion with dayfirst=False if the first attempt failed
+    datetime_column_monthfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=False)
+    datetime_non_na_ratio_monthfirst = datetime_column_monthfirst.notnull().mean()
+    
+    if datetime_non_na_ratio_monthfirst >= non_na_ratio:
+        return pd.to_datetime(column, errors='coerce', dayfirst=False)
 
     # Try converting to timedelta
     timedelta_column = pd.to_timedelta(column_no_na, errors='coerce')
@@ -198,3 +216,75 @@ def format_date_based_on_precision(dt):
         return dt.strftime("%Y-%m-%d %H:%M")  # Date and hour:minute if no microseconds
     else:
         return dt.strftime("%Y-%m-%d %H:%M:%S.%f")  # Full datetime with microseconds
+
+import pandas as pd
+from concurrent.futures import ProcessPoolExecutor
+
+# Process function for a chunk
+def load_and_process_csv_in_chunks(file_path, chunksize=50000, desired_types=None, non_na_ratio=0.75):
+    chunk_results = []
+
+    # Process each chunk in parallel
+    with ProcessPoolExecutor() as executor:
+        # Read file in chunks
+        for chunk in pd.read_csv(file_path, chunksize=chunksize):
+            # Submit each chunk to the executor
+            future = executor.submit(infer_and_convert_data_types, chunk)
+            chunk_results.append(future)
+
+    # Combine all processed chunks
+    processed_chunks = [future.result() for future in chunk_results]
+    df_combined = pd.concat(processed_chunks, ignore_index=True)
+
+    return df_combined
+
+def load_and_process_csv_in_chunks_serial(file_path, chunksize=50000, desired_types=None, non_na_ratio=0.75):
+    processed_chunks = []
+
+    # Read file in chunks and process each chunk serially
+    for chunk in pd.read_csv(file_path, chunksize=chunksize):
+        # Process the chunk directly without parallelism
+        processed_chunk = infer_and_convert_data_types(chunk, desired_types=desired_types)
+        processed_chunks.append(processed_chunk)
+
+    # Combine all processed chunks
+    df_combined = pd.concat(processed_chunks, ignore_index=True)
+
+    return df_combined
+
+def load_and_process(file_path):
+    # Read file in chunks and process each chunk serially
+    df = pd.read_csv(file_path)
+    df_processed = infer_and_convert_data_types(df)
+
+    return df_processed
+# Example usage
+if __name__ == '__main__':
+   #file_path = 'generated_data_1GB.csv'  
+    file_path = 'err.csv'
+    #file_path = 'generated_data.csv'  
+    start_time_serial = time.time()
+    df_serial = load_and_process(file_path)
+    end_time_serial = time.time()
+    duration_serial = end_time_serial - start_time_serial
+
+    start_time_serial_with_chunk = time.time()
+    df_serial_with_chunk = load_and_process_csv_in_chunks_serial(file_path)
+    end_time_serial_with_chunk = time.time()
+    duration_serial_with_chunk = end_time_serial_with_chunk - start_time_serial_with_chunk
+
+
+    start_time_parallel = time.time()
+    df_combined = load_and_process_csv_in_chunks(file_path)
+    end_time_parallel = time.time()
+    duration_parallel = end_time_parallel - start_time_parallel
+
+    print("Parallel processing info:")
+    print(df_combined.info())
+    print(f"Parallel processing time: {duration_parallel:.2f} seconds\n")
+    print("Serial processing info:")
+    print(df_serial.info())
+    print(f"Serial processing time: {duration_serial:.2f} seconds\n")
+    print("Serial with chunk processing info:")
+    print(df_serial_with_chunk.info())
+    print(f"Serial with chunk processing time: {duration_serial_with_chunk:.2f} seconds\n")
