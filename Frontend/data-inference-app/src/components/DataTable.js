@@ -1,63 +1,118 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const DataTable = ({ data, types, message, setTypes, showTypeSelectors, toggleTypeSelectors }) => {
-const isNotBlank = (str) => str && str.trim().length > 0;
-  if (isNotBlank(message)) {
-    return <p>{message}</p>;
-  }
+const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
+  const [data, setData] = useState([]); // Data from the server
+  const [types, setTypes] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // Track current page
+  const [totalPages, setTotalPages] = useState(1); // Total pages from server response
+  const [loading, setLoading] = useState(false); // Loading state
 
+  console.log(refreshTrigger);
   const handleTypeChange = (idx, newType) => {
     const updatedTypes = [...types];
     updatedTypes[idx] = newType;
-    console.log(idx)
-    console.log(newType)
     setTypes(updatedTypes);
+    handleSetTypes(updatedTypes);
   };
 
-  return (
-    <div>
-      <button onClick={toggleTypeSelectors}>
-        {showTypeSelectors ? 'Let System Infer Types' : 'Specify Types Manually'}
-      </button>
-      <table>
-        <thead>
-          <tr>
-            {Object.keys(data[0]).map((column, idx) => (
-              <th key={column}>
-                {column}
-                <br />
-                {showTypeSelectors ? (
-                  <select
-                    value={types[idx] || 'Text'}
-                    onChange={(e) => handleTypeChange(idx, e.target.value)}
-                  >
-                    <option value="Text">Text</option>
-                    <option value="Integer">Integer</option>
-                    <option value="Decimal">Decimal</option>
-                    <option value="Boolean">Boolean</option>
-                    <option value="Date">Date</option>
-                    <option value="Duration">Duration</option>
-                    <option value="Category">Category</option>
-                  </select>
-                ) : (
-                  <span>{types[idx] || 'Text'}</span>
-                )}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, rowIndex) => (
-            <tr key={rowIndex}>
-              {Object.values(row).map((cell, cellIndex) => (
-                <td key={cellIndex}>{cell}</td>
+  // Fetch data from the server for the current page
+  const fetchData = async (page) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post('/core/view/', { page, });
+      console.log(response);
+      setData(response.data.records); // Update data with records from response
+      setTypes(response.data.types);
+      setTotalPages(response.data.total_pages); // Set total pages from response
+    } catch (error) {
+      setError('Error fetching data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (refreshTrigger) {
+      setCurrentPage(1);
+    }
+    fetchData(currentPage);
+  }, [refreshTrigger, currentPage]);
+  
+
+  // Handle pagination controls
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  if (data?.length > 0)
+    return (
+      <div>
+        <button onClick={toggleTypeSelectors}>
+          {showTypeSelectors ? 'Let System Infer Types' : 'Specify Types Manually'}
+        </button>
+        {loading ? (
+          <p>Loading data...</p>
+        ) : <table>
+          <thead>
+            <tr>
+              {Object.keys(data[0]).map((column, idx) => (
+                <th key={column}>
+                  {column}
+                  <br />
+                  {showTypeSelectors ? (
+                    <select
+                      value={types[idx] || 'Text'}
+                      onChange={(e) => handleTypeChange(idx, e.target.value)}
+                    >
+                      <option value="Text">Text</option>
+                      <option value="Integer">Integer</option>
+                      <option value="Decimal">Decimal</option>
+                      <option value="Boolean">Boolean</option>
+                      <option value="Date">Date</option>
+                      <option value="Duration">Duration</option>
+                      <option value="Category">Category</option>
+                    </select>
+                  ) : (
+                    <span>{types[idx] || 'Text'}</span>
+                  )}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+          </thead>
+          <tbody>
+            {data.map((row, rowIndex) => (
+              <tr key={rowIndex}>
+                {Object.values(row).map((cell, cellIndex) => (
+                  <td key={cellIndex}>{cell}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>}
+        {/* Pagination Controls */}
+        <div>
+          <button onClick={handlePrevPage} disabled={currentPage === 1 || loading}>
+            Previous
+          </button>
+          <span>
+            Page {currentPage} of {totalPages}
+          </span>
+          <button onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
+            Next
+          </button>
+        </div>
+      </div>
+    );
 };
 
 export default DataTable;

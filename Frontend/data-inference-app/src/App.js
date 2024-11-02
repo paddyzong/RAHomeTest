@@ -7,7 +7,10 @@ const App = () => {
   const [data, setData] = useState(null);
   const [types, setTypes] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(null);
+  const [error, setError] = useState("");
+  const [totalRecords, setTotalRecords] = useState(0); 
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showTypeSelectors, setShowTypeSelectors] = useState(false);
 
   const handleFileUrlChange = (newUrl) => {
@@ -34,27 +37,31 @@ const App = () => {
     setShowTypeSelectors(false);
   };
 
+  const isNotBlank = (str) => str && str.trim().length > 0;
+  
   return (
     <div>
       <FileUpload setFileUrl={handleFileUrlChange} setMessage={setMessage} resetFile={handleFileReset}/>
+      {message && (<p>{message}</p>)}
       {fileUrl && (
         <>
-          <DataTable 
-            data={data} 
-            types={types} 
-            message={message} 
-            setTypes={setTypes} 
+          {totalRecords > 0 && (<DataTable 
+            totalRecords={totalRecords}
+            setError={setError} 
+            handleSetTypes={handleSetTypes} 
             showTypeSelectors={showTypeSelectors} 
+            refreshTrigger={refreshTrigger}
             toggleTypeSelectors={toggleTypeSelectors}
-          />
+          />)}
           <SubmitButton 
             data={data} 
             types={types} 
             fileUrl={fileUrl} 
             setData={handleSetData} 
-            setTypes={handleSetTypes} 
             setMessage={setMessage} 
+            setTotalRecords={setTotalRecords}
             showTypeSelectors={showTypeSelectors} 
+            onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
           />
         </>
       )}

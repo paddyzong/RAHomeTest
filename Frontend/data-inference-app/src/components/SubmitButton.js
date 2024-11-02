@@ -1,18 +1,17 @@
 import React from 'react';
 import axios from 'axios';
 
-const SubmitButton = ({ data, types, fileUrl, setData, setTypes, setMessage, showTypeSelectors }) => {
+const SubmitButton = ({ data, types, fileUrl, setData, setTypes, setMessage, setTotalRecords, showTypeSelectors, onProcessComplete }) => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post('/core/process/', { fileUrl, types, specifyTypesManually: showTypeSelectors, });
-      console.log(response);
-      if (!response.data.data?.length) {
+      if (response.data.total_records <= 0) {
         alert("No data available.");
         return;
       }
       setMessage("");
-      setData(response.data.data);
-      setTypes(response.data.types);
+      onProcessComplete();
+      setTotalRecords(response.data.total_records);
       alert('Data processed successfully!');
     } catch (err) {
       if (err.response) {

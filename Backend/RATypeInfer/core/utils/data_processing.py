@@ -60,14 +60,21 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
     datetime_column_dayfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=True)
     datetime_non_na_ratio_dayfirst = datetime_column_dayfirst.notnull().mean()
     
-    if datetime_non_na_ratio_dayfirst >= non_na_ratio:
-        return pd.to_datetime(column, errors='coerce', dayfirst=True)
-    
     # Fallback: Attempt conversion with dayfirst=False if the first attempt failed
     datetime_column_monthfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=False)
     datetime_non_na_ratio_monthfirst = datetime_column_monthfirst.notnull().mean()
     
-    if datetime_non_na_ratio_monthfirst >= non_na_ratio:
+    if datetime_non_na_ratio_dayfirst >= non_na_ratio and datetime_non_na_ratio_monthfirst >= non_na_ratio:
+    # Both exceed non_na_ratio; choose the one with the higher ratio
+        if datetime_non_na_ratio_dayfirst >= datetime_non_na_ratio_monthfirst:
+            return pd.to_datetime(column, errors='coerce', dayfirst=True)
+        else:
+            return pd.to_datetime(column, errors='coerce', dayfirst=False)
+    elif datetime_non_na_ratio_dayfirst >= non_na_ratio:
+        # Only dayfirst=True meets the threshold
+        return pd.to_datetime(column, errors='coerce', dayfirst=True)
+    elif datetime_non_na_ratio_monthfirst >= non_na_ratio:
+        # Only dayfirst=False meets the threshold
         return pd.to_datetime(column, errors='coerce', dayfirst=False)
 
     # Try converting to timedelta
@@ -179,7 +186,19 @@ def convert_column_to_type(column, desired_type):
 
         elif desired_type == 'Date':
             # Convert to datetime64[ns]
-            return pd.to_datetime(column, errors='coerce')
+            # Convert with dayfirst=True
+            datefirst = pd.to_datetime(column, errors='coerce', dayfirst=True)
+            non_na_ratio_datefirst = datefirst.notnull().mean()
+
+            # Convert with dayfirst=False
+            monthfirst = pd.to_datetime(column, errors='coerce', dayfirst=False)
+            non_na_ratio_monthfirst = monthfirst.notnull().mean()
+
+            # Compare the non-null ratios and return the conversion with the higher ratio
+            if non_na_ratio_datefirst >= non_na_ratio_monthfirst:
+                return datefirst
+            else:
+                return monthfirst
 
         elif desired_type == 'Duration':
             # Convert to timedelta64[ns]
