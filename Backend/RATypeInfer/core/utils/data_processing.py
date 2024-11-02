@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 import traceback
 import time
+import gc
+import io
 
 def infer_and_convert_data_types(df, desired_types=None):
     if desired_types is None:
@@ -258,33 +260,49 @@ def load_and_process(file_path):
     df_processed = infer_and_convert_data_types(df)
 
     return df_processed
+def capture_info(df, name):
+    """Capture the .info() output of a DataFrame and return it as a string."""
+    buffer = io.StringIO()
+    df.info(buf=buffer)
+    info_str = buffer.getvalue()
+    buffer.close()
+    return info_str
+
 # Example usage
 if __name__ == '__main__':
    #file_path = 'generated_data_1GB.csv'  
     file_path = 'err.csv'
-    #file_path = 'generated_data.csv'  
+    #file_path = 'generated_data.csv' 
+
+    df_info_outputs = {}
+
     start_time_serial = time.time()
     df_serial = load_and_process(file_path)
+    df_info_outputs['df_serial'] = capture_info(df_serial, 'df_serial')
     end_time_serial = time.time()
     duration_serial = end_time_serial - start_time_serial
+    del df_serial
+    gc.collect()
 
     start_time_serial_with_chunk = time.time()
     df_serial_with_chunk = load_and_process_csv_in_chunks_serial(file_path)
+    df_info_outputs['df_serial_with_chunk'] = capture_info(df_serial_with_chunk, 'df_serial_with_chunk')
     end_time_serial_with_chunk = time.time()
     duration_serial_with_chunk = end_time_serial_with_chunk - start_time_serial_with_chunk
-
+    del df_serial_with_chunk
+    gc.collect()
 
     start_time_parallel = time.time()
     df_combined = load_and_process_csv_in_chunks(file_path)
+    df_info_outputs['df_combined'] = capture_info(df_combined, 'df_combined')
     end_time_parallel = time.time()
     duration_parallel = end_time_parallel - start_time_parallel
+    del df_combined
+    gc.collect()
 
-    print("Parallel processing info:")
-    print(df_combined.info())
+    for df_name, info_str in df_info_outputs.items():
+        print(f"--- {df_name} info ---\n{info_str}\n")
+
     print(f"Parallel processing time: {duration_parallel:.2f} seconds\n")
-    print("Serial processing info:")
-    print(df_serial.info())
     print(f"Serial processing time: {duration_serial:.2f} seconds\n")
-    print("Serial with chunk processing info:")
-    print(df_serial_with_chunk.info())
     print(f"Serial with chunk processing time: {duration_serial_with_chunk:.2f} seconds\n")
