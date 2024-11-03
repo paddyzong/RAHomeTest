@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import StyledButton from './StyledButton';
 
 const FileUpload = ({ setFileUrl, resetFile, setMessage, setError, setIsDataProcessed }) => {
   const [file, setFile] = useState(null);
@@ -8,7 +9,8 @@ const FileUpload = ({ setFileUrl, resetFile, setMessage, setError, setIsDataProc
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setIsDataProcessed(false);
-    setError('');
+    setMessage(null);
+    setError(null);
     resetFile();
   };
 
@@ -35,10 +37,15 @@ const FileUpload = ({ setFileUrl, resetFile, setMessage, setError, setIsDataProc
   };
 
   return (
-    <div>
-      <input type="file" accept=".csv,.xlsx" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload File</button>
-      {/* {error && <p style={{ color: 'red' }}>{error}</p>} */}
+    <div className="flex flex-col items-center mt-4"> 
+      <div className="flex items-center space-x-2">
+        <input
+          type="file"
+          accept=".csv,.xlsx"
+          className="text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          onChange={handleFileChange} />
+        <StyledButton onClick={handleUpload} >Upload File</StyledButton>
+      </div>
     </div>
   );
 };

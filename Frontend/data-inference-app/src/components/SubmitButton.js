@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import StyledButton from './StyledButton';
 
 const SubmitButton = ({ types, fileUrl, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
   const handleSubmit = async () => {
@@ -36,7 +37,7 @@ const SubmitButton = ({ types, fileUrl, setMessage, setError, setTotalRecords, s
     }
   };
 
-  return <button onClick={handleSubmit}>Process</button>;
+  return <StyledButton onClick={handleSubmit}>Process</StyledButton>;
 };
 
 export default SubmitButton;

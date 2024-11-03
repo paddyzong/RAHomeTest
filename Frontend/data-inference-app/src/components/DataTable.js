@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import StyledButton from './StyledButton';
 
 const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger, clearDataTrigger }) => {
   const [data, setData] = useState([]); // Data from the server
@@ -35,7 +36,7 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
   };
 
   useEffect(() => {
-    if(currentPage!==1)
+    if (currentPage !== 1)
       setCurrentPage(1);
     else
       fetchData(currentPage);
@@ -60,9 +61,9 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
   if (data?.length > 0)
     return (
       <div>
-        <button onClick={toggleTypeSelectors}>
+        <StyledButton onClick={toggleTypeSelectors}>
           {showTypeSelectors ? 'Let System Infer Types' : 'Specify Types Manually'}
-        </button>
+        </StyledButton>
         {loading ? (
           <p>Loading data...</p>
         ) : <table>
@@ -103,14 +104,22 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
           </tbody>
         </table>}
         {/* Pagination Controls */}
-        <div>
-          <button onClick={handlePrevPage} disabled={currentPage === 1 || loading}>
+        <div className="flex items-center justify-center space-x-4 mt-4">
+          <button
+            onClick={handlePrevPage}
+            disabled={currentPage === 1 || loading}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-200 ease-in-out disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
             Previous
           </button>
-          <span>
+          <span className="text-gray-700 font-medium">
             Page {currentPage} of {totalPages}
           </span>
-          <button onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
+          <button
+            onClick={handleNextPage}
+            disabled={currentPage === totalPages || loading}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-200 ease-in-out disabled:bg-gray-300 disabled:cursor-not-allowed"
+          >
             Next
           </button>
         </div>
