@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 
-const SubmitButton = ({ data, types, fileUrl, setData, setTypes, setMessage, setTotalRecords, showTypeSelectors, onProcessComplete }) => {
+const SubmitButton = ({ types, fileUrl, setMessage, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
   const handleSubmit = async () => {
     try {
       const response = await axios.post('/core/process/', { fileUrl, types, specifyTypesManually: showTypeSelectors, });
@@ -10,6 +10,7 @@ const SubmitButton = ({ data, types, fileUrl, setData, setTypes, setMessage, set
         return;
       }
       setMessage("");
+      setIsDataProcessed(true);
       onProcessComplete();
       setTotalRecords(response.data.total_records);
       alert('Data processed successfully!');

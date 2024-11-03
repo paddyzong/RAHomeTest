@@ -8,6 +8,7 @@ const App = () => {
   const [types, setTypes] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
   const [message, setMessage] = useState(null);
+  const [isDataProcessed, setIsDataProcessed] = useState(false);
   const [error, setError] = useState("");
   const [totalRecords, setTotalRecords] = useState(0); 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -41,16 +42,22 @@ const App = () => {
   
   return (
     <div>
-      <FileUpload setFileUrl={handleFileUrlChange} setMessage={setMessage} resetFile={handleFileReset}/>
+      <FileUpload 
+        setFileUrl={handleFileUrlChange} 
+        setMessage={setMessage} 
+        resetFile={handleFileReset}
+        setIsDataProcessed={setIsDataProcessed}
+        />
       {message && (<p>{message}</p>)}
       {fileUrl && (
         <>
-          {totalRecords > 0 && (<DataTable 
+          {isDataProcessed && (<DataTable 
             totalRecords={totalRecords}
             setError={setError} 
             handleSetTypes={handleSetTypes} 
             showTypeSelectors={showTypeSelectors} 
             refreshTrigger={refreshTrigger}
+            //clearDataTrigger={clearDataTrigger}
             toggleTypeSelectors={toggleTypeSelectors}
           />)}
           <SubmitButton 
@@ -61,6 +68,7 @@ const App = () => {
             setMessage={setMessage} 
             setTotalRecords={setTotalRecords}
             showTypeSelectors={showTypeSelectors} 
+            setIsDataProcessed={setIsDataProcessed}
             onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
           />
         </>

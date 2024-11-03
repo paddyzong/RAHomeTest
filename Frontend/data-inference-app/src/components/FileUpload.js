@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 
-const FileUpload = ({ setFileUrl, resetFile, setMessage }) => {
+const FileUpload = ({ setFileUrl, resetFile, setMessage, setIsDataProcessed }) => {
   const [file, setFile] = useState(null);
   const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
+    setIsDataProcessed(false);
     setError('');
     resetFile();
   };

@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
+const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger, clearDataTrigger }) => {
   const [data, setData] = useState([]); // Data from the server
   const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const [totalPages, setTotalPages] = useState(1); // Total pages from server response
   const [loading, setLoading] = useState(false); // Loading state
 
-  console.log(refreshTrigger);
+  //console.log("refreshTrigger:"+refreshTrigger);
+  //console.log("current page:" + currentPage);
   const handleTypeChange = (idx, newType) => {
     const updatedTypes = [...types];
     updatedTypes[idx] = newType;
@@ -22,24 +23,33 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
     setError(null);
     try {
       const response = await axios.post('/core/view/', { page, });
-      console.log(response);
+      //console.log(response);
       setData(response.data.records); // Update data with records from response
       setTypes(response.data.types);
       setTotalPages(response.data.total_pages); // Set total pages from response
     } catch (error) {
-      setError('Error fetching data');
+      setError('Error fetching data.');
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (refreshTrigger) {
+    if(currentPage!==1)
       setCurrentPage(1);
-    }
+    else
+      fetchData(currentPage);
+  }, [refreshTrigger]);
+
+  useEffect(() => {
     fetchData(currentPage);
-  }, [refreshTrigger, currentPage]);
-  
+  }, [currentPage]);
+
+  // useEffect(() => {
+  //   if (clearDataTrigger) {
+  //     clearData();
+  //   }
+  // }, [clearDataTrigger]);
 
   // Handle pagination controls
   const handleNextPage = () => {

@@ -78,19 +78,7 @@ def process(request):
 
     print("\nData types after inference:")
     print(df.dtypes)
-    df_copy = df.copy()
-    df_copy = df_copy.replace({np.nan: None})
-    datetime_cols = df_copy.select_dtypes(include=['datetime64[ns]']).columns
 
-    # Apply formatting function only to datetime columns
-    for col in datetime_cols:
-        df_copy[col] = df_copy[col].apply(format_date_based_on_precision)
-
-    #    Convert the modified DataFrame to JSON
-    json_data = df_copy.to_dict(orient="records")
-    #print(json_data)
-    # Return JSON response
-    #return JsonResponse({"data":json_data,"types":column_types}, safe=False)
     return JsonResponse({
     "fileUrl": fileUrl,
     "total_records": len(df),
