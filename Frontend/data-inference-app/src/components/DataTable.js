@@ -45,13 +45,6 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
     fetchData(currentPage);
   }, [currentPage]);
 
-  // useEffect(() => {
-  //   if (clearDataTrigger) {
-  //     clearData();
-  //   }
-  // }, [clearDataTrigger]);
-
-  // Handle pagination controls
   const handleNextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);

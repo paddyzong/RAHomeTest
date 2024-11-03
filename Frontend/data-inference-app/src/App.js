@@ -45,10 +45,12 @@ const App = () => {
       <FileUpload 
         setFileUrl={handleFileUrlChange} 
         setMessage={setMessage} 
+        setError={setError}
         resetFile={handleFileReset}
         setIsDataProcessed={setIsDataProcessed}
         />
       {message && (<p>{message}</p>)}
+      {error && (<p style={{ color: 'red' }}>{error}</p>)} 
       {fileUrl && (
         <>
           {isDataProcessed && (<DataTable 
@@ -66,6 +68,7 @@ const App = () => {
             fileUrl={fileUrl} 
             setData={handleSetData} 
             setMessage={setMessage} 
+            setError={setError}
             setTotalRecords={setTotalRecords}
             showTypeSelectors={showTypeSelectors} 
             setIsDataProcessed={setIsDataProcessed}
