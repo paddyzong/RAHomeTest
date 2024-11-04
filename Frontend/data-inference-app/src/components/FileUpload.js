@@ -37,15 +37,13 @@ const FileUpload = ({ setFileUrl, resetFile, setMessage, setError, setIsDataProc
   };
 
   return (
-    <div className="flex flex-col items-center mt-4"> 
-      <div className="flex items-center space-x-2">
+    <div className="flex flex-row items-center mt-4"> 
         <input
           type="file"
           accept=".csv,.xlsx"
-          className="text-sm text-gray-700 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{marginLeft:'1em',marginTop:'1em'}}
           onChange={handleFileChange} />
-        <StyledButton onClick={handleUpload} >Upload File</StyledButton>
-      </div>
+        <StyledButton onClick={handleUpload} style={{ marginLeft: "auto", marginTop:'1em', marginRight:'1em'}}>Upload File</StyledButton>
     </div>
   );
 };

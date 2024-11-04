@@ -37,7 +37,7 @@ const SubmitButton = ({ types, fileUrl, setMessage, setError, setTotalRecords, s
     }
   };
 
-  return <StyledButton onClick={handleSubmit}>Process</StyledButton>;
+  return <StyledButton style={{marginTop:'1em'}} onClick={handleSubmit}>Process</StyledButton>;
 };
 
 export default SubmitButton;
