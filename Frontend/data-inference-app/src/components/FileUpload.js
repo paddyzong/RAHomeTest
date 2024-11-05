@@ -5,7 +5,7 @@ import { Upload } from 'tus-js-client'; // Import Upload directly
 
 const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProcessed }) => {
   const [file, setFile] = useState(null);
-  const MAX_FILE_SIZE = 100 * 1024 * 1024; 
+  const MAX_FILE_SIZE = 100 * 1024 * 1024;
   // const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
@@ -32,7 +32,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       uploadWithAxios(file);
     }
   };
-  
+
   // Upload function using Tus for large files
   const uploadWithAxios = async (file) => {
     const formData = new FormData();
@@ -42,7 +42,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       const response = await axios.post('/core/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      onUploaded(response.data.file_url,false);
+      onUploaded(response.data.file_url, false);
       setMessage('The file has been uploaded. Click process to infer types.');
       setError(null);
     } catch (err) {
@@ -60,6 +60,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
         filename: file.name,
         filetype: file.type,
       },
+      chunkSize: 512 * 1024 * 1024,
       onError: (error) => {
         console.error("Tus upload failed:", error);
         setMessage(null);
@@ -73,24 +74,32 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
         const url = upload.url;
         const id = url.split("/")[3]
         //.replace(/-/g, ""); // Removes all hyphens
-        console.log("Upload finished:",id); 
-        onUploaded(id,true)
+        console.log("Upload finished:", id);
+        onUploaded(id, true)
         setMessage('The file has been uploaded. Click process to infer types.');
         setError(null);
       },
     });
+    // Check if there are any previous uploads to continue.
+    upload.findPreviousUploads().then(function (previousUploads) {
+      // Found previous uploads so we select the first one.
+      if (previousUploads.length) {
+        upload.resumeFromPreviousUpload(previousUploads[0])
+      }
 
-    upload.start();
+      // Start the upload
+      upload.start()
+    })
   };
 
   return (
-    <div className="flex flex-row items-center mt-4"> 
-        <input
-          type="file"
-          accept=".csv,.xlsx"
-          style={{marginLeft:'1em',marginTop:'1em'}}
-          onChange={handleFileChange} />
-        <StyledButton onClick={handleUpload} style={{ marginLeft: "auto", marginTop:'1em', marginRight:'1em'}}>Upload File</StyledButton>
+    <div className="flex flex-row items-center mt-4">
+      <input
+        type="file"
+        accept=".csv,.xlsx"
+        style={{ marginLeft: '1em', marginTop: '1em' }}
+        onChange={handleFileChange} />
+      <StyledButton onClick={handleUpload} style={{ marginLeft: "auto", marginTop: '1em', marginRight: '1em' }}>Upload File</StyledButton>
     </div>
   );
 };
