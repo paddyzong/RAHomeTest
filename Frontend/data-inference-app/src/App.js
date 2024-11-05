@@ -8,6 +8,7 @@ const App = () => {
   const [data, setData] = useState(null);
   const [types, setTypes] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
+  const [isTusUpload, setIsTusUpload] = useState(false);
   const [message, setMessage] = useState(null);
   const [isDataProcessed, setIsDataProcessed] = useState(false);
   const [error, setError] = useState("");
@@ -15,8 +16,9 @@ const App = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showTypeSelectors, setShowTypeSelectors] = useState(false);
 
-  const handleFileUrlChange = (newUrl) => {
-    setFileUrl(newUrl);
+  const onUploaded = (fileUrl, isTusUpload) => {
+    setFileUrl(fileUrl);
+    setIsTusUpload(isTusUpload);
   };
 
   const handleSetData = (newData) => {
@@ -46,7 +48,7 @@ const App = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
       <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
         <FileUpload
-          setFileUrl={handleFileUrlChange}
+          onUploaded={onUploaded}
           setMessage={setMessage}
           resetFile={handleFileReset}
           setIsDataProcessed={setIsDataProcessed}
@@ -62,6 +64,7 @@ const App = () => {
               <DataTable
                 totalRecords={totalRecords}
                 setError={setError}
+                setMessage={setMessage}
                 handleSetTypes={handleSetTypes}
                 showTypeSelectors={showTypeSelectors}
                 refreshTrigger={refreshTrigger}
@@ -73,6 +76,7 @@ const App = () => {
               data={data}
               types={types}
               fileUrl={fileUrl}
+              isTusUpload={isTusUpload}
               setData={handleSetData}
               setMessage={setMessage}
               setTotalRecords={setTotalRecords}

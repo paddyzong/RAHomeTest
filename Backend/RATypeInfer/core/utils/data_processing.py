@@ -4,6 +4,7 @@ import traceback
 import time
 import gc
 import io
+import os
 
 def infer_and_convert_data_types(df, desired_types=None):
     if desired_types is None:
@@ -241,19 +242,29 @@ def format_date_based_on_precision(dt):
 import pandas as pd
 from concurrent.futures import ProcessPoolExecutor
 
-# Process function for a chunk
-def load_and_process_csv_in_chunks(file_path, chunksize=50000, desired_types=None, non_na_ratio=0.75):
+def load_and_process_file_in_chunks(file_path, chunksize=50000, desired_types=None, non_na_ratio=0.75):
     chunk_results = []
-
+    
+    # Determine the file extension
+    file_extension = os.path.splitext(file_path)[1].lower()
+    
+    # Define the function for reading chunks based on file type
+    def read_file_in_chunks():
+        if file_extension == ".csv":
+            return pd.read_csv(file_path, chunksize=chunksize)
+        elif file_extension in [".xls", ".xlsx"]:
+            return pd.read_excel(file_path, chunksize=chunksize, engine="openpyxl")  # Using openpyxl for .xlsx support
+        else:
+            raise ValueError("Unsupported file type. Please upload a CSV or Excel file.")
+    
     # Process each chunk in parallel
     with ProcessPoolExecutor() as executor:
         # Read file in chunks
-        for chunk in pd.read_csv(file_path, chunksize=chunksize):
+        for chunk in read_file_in_chunks():
             # Submit each chunk to the executor
-            future = executor.submit(infer_and_convert_data_types, chunk)
+            future = executor.submit(infer_and_convert_data_types, chunk,desired_types=desired_types)
             chunk_results.append(future)
-
-    # Combine all processed chunks
+    
     processed_chunks = [future.result() for future in chunk_results]
     df_combined = pd.concat(processed_chunks, ignore_index=True)
 
@@ -261,7 +272,6 @@ def load_and_process_csv_in_chunks(file_path, chunksize=50000, desired_types=Non
 
 def load_and_process_csv_in_chunks_serial(file_path, chunksize=50000, desired_types=None, non_na_ratio=0.75):
     processed_chunks = []
-
     # Read file in chunks and process each chunk serially
     for chunk in pd.read_csv(file_path, chunksize=chunksize):
         # Process the chunk directly without parallelism
@@ -270,7 +280,6 @@ def load_and_process_csv_in_chunks_serial(file_path, chunksize=50000, desired_ty
 
     # Combine all processed chunks
     df_combined = pd.concat(processed_chunks, ignore_index=True)
-
     return df_combined
 
 def load_and_process(file_path):
@@ -312,7 +321,7 @@ if __name__ == '__main__':
     gc.collect()
 
     start_time_parallel = time.time()
-    df_combined = load_and_process_csv_in_chunks(file_path)
+    df_combined = load_and_process_file_in_chunks(file_path)
     df_info_outputs['df_combined'] = capture_info(df_combined, 'df_combined')
     end_time_parallel = time.time()
     duration_parallel = end_time_parallel - start_time_parallel

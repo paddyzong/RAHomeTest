@@ -2,10 +2,10 @@ import React from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
 
-const SubmitButton = ({ types, fileUrl, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
+const SubmitButton = ({ types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('/core/process/', { fileUrl, types, specifyTypesManually: showTypeSelectors, });
+      const response = await axios.post('/core/process/', { fileUrl, isTusUpload, types, specifyTypesManually: showTypeSelectors, });
       if (response.data.total_records <= 0) {
         alert("No data available.");
         return;

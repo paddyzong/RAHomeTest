@@ -13,6 +13,10 @@ from rest_framework.exceptions import ValidationError
 from .utils.file_utils import *
 from .utils.data_processing import *
 import math
+from rest_framework_tus.models import get_upload_model
+from uuid import UUID
+
+Upload = get_upload_model()
 processed_data = None
 # Create your views here.
 def process(request):
@@ -22,57 +26,63 @@ def process(request):
         raise ValidationError("File URL is required.")
     types = []
     specify_types_manually = data.get('specifyTypesManually', False)
+    #is_Tus = True
+    is_Tus = data.get('isTusUpload', False)
     if(specify_types_manually):
         types = data.get('types', None)
-
+    file_path = ""
+    if(is_Tus):
+        upload = Upload.objects.get(guid=UUID(fileUrl))
+        fileUrl = str(upload.uploaded_file)
     file_path = os.path.join(settings.MEDIA_ROOT,fileUrl) 
-    file_extension = os.path.splitext(file_path)[1].lower()  # Get the file extension in lowercase
+    file_size = os.path.getsize(file_path) 
+    if file_size > 100 * 1024 * 1024:
+        df = load_and_process_file_in_chunks(file_path, desired_types=types)
+    else:
+        file_extension = os.path.splitext(file_path)[1].lower()  # Get the file extension in lowercase
 
-    try:
-        # Check the file extension and read the file accordingly
-        if file_extension == ".csv":
-            if is_csv_file_empty(file_path):
-               return JsonResponse(
-                {"error": "The file is empty."},
-                status=status.HTTP_400_BAD_REQUEST
-            ) 
-            df = pd.read_csv(file_path)
-        elif file_extension in [".xls", ".xlsx"]:
-            if is_excel_file_empty(file_path):
-               return JsonResponse(
-                {"error": "The file is empty."},
-                status=status.HTTP_400_BAD_REQUEST
-            )  
-            df = pd.read_excel(file_path)
-        else:
+        try:
+            # Check the file extension and read the file accordingly
+            if file_extension == ".csv":
+                if is_csv_file_empty(file_path):
+                    traceback.print_exc()
+                    return JsonResponse(
+                    {"error": "The file is empty."},
+                    status=status.HTTP_400_BAD_REQUEST
+                ) 
+                df = pd.read_csv(file_path)
+            elif file_extension in [".xls", ".xlsx"]:
+                if is_excel_file_empty(file_path):
+                    return JsonResponse(
+                    {"error": "The file is empty."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )  
+                df = pd.read_excel(file_path)
+            else:
+                return JsonResponse(
+                    {"error": "Unsupported file type. Please upload a CSV or Excel file."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+        except pd.errors.EmptyDataError:
+            traceback.print_exc()  # Print the full error stack trace
             return JsonResponse(
-                {"error": "Unsupported file type. Please upload a CSV or Excel file."},
+                {"error": "The file is empty."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
-    except pd.errors.EmptyDataError:
-        traceback.print_exc()  # Print the full error stack trace
-        return JsonResponse(
-            {"error": "The file is empty."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    except pd.errors.ParserError:
-        traceback.print_exc()  # Print the full error stack trace
-        return JsonResponse(
-            {"error": "The file could not be parsed correctly. Please check the file format."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
-    except Exception as e:
-        traceback.print_exc()  # Print the full error stack trace
-        return JsonResponse(
-            {"error": str(e)},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-    
-    print("Data types before inference:")
-    print(df.dtypes)
-
-    df = infer_and_convert_data_types(df,types)
+        except pd.errors.ParserError:
+            traceback.print_exc()  # Print the full error stack trace
+            return JsonResponse(
+                {"error": "The file could not be parsed correctly. Please check the file format."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            traceback.print_exc()  # Print the full error stack trace
+            return JsonResponse(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        df = infer_and_convert_data_types(df,types)
     global processed_data
     processed_data = df
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
 
-const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
+const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
   const [data, setData] = useState([]); // Data from the server
   const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
@@ -64,6 +64,7 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
   const fetchData = async (page) => {
     setLoading(true);
     setError(null);
+    setMessage(null);
     try {
       const response = await axios.post('/core/view/', { page, });
       //console.log(response);
@@ -71,6 +72,7 @@ const DataTable = ({ setError, handleSetTypes, showTypeSelectors, toggleTypeSele
       setTypes(response.data.types);
       setTotalPages(response.data.total_pages); // Set total pages from response
     } catch (error) {
+      setMessage(null);
       setError('Error fetching data.');
     } finally {
       setLoading(false);

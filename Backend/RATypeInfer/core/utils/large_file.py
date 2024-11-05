@@ -35,4 +35,4 @@ def generate_random_csv(num_rows, file_path='random_data.csv', chunk_size=100000
     print(f"Random data saved to {file_path}")
 
 # Generate approximately 1GB of data
-generate_random_csv(10000000, "generated_data_1GB.csv")  # Adjust row count if needed
+generate_random_csv(5000000, "generated_data_1GB.csv")  # Adjust row count if needed
