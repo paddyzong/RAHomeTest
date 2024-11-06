@@ -50,7 +50,7 @@ Follow these steps to set up and run the backend and frontend on your local mach
 If your backend code is in a subdirectory, navigate to it:
 
 ```bash
-cd backend
+cd Backend/RATypeInfer
 ```
 
 #### Step 2: Create a Virtual Environment
@@ -98,7 +98,7 @@ python manage.py runserver
 If your frontend code is in a subdirectory, navigate to it:
 
 ```bash
-cd frontend
+cd Frontend/data-inference-app
 ```
 
 #### Step 2: Install Dependencies
