@@ -121,10 +121,10 @@ npm start
 
 ## Additional Information
 
-- When Running Locally:
-- Backend server runs on http://localhost:8000/
-- Frontend application runs on http://localhost:3000/
-- When Running with Docker:
-- Backend server runs on http://localhost:8000/
-- Frontend application runs on http://localhost/ (port 80)
+### When Running Locally:
+Backend server runs on http://localhost:8000/
+Frontend application runs on http://localhost:3000/
+### When Running with Docker:
+Backend server runs on http://localhost:8000/
+Frontend application runs on http://localhost/ (port 80)
 ---
