@@ -121,10 +121,10 @@ npm start
 
 ## Additional Information
 
-- Ensure that the backend server is running before starting the frontend application.
-- The default backend server runs on `http://localhost:8000/`.
-- The frontend application typically runs on `http://localhost:3000/`.
-
+- When Running Locally:
+- Backend server runs on http://localhost:8000/
+- Frontend application runs on http://localhost:3000/
+- When Running with Docker:
+- Backend server runs on http://localhost:8000/
+- Frontend application runs on http://localhost/ (port 80)
 ---
-
-
