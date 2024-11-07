@@ -82,6 +82,13 @@ Install the required Python packages:
 ```bash
 pip install -r requirements.txt --break-system-packages
 ```
+#### Step 5: Apply Database Migrations
+
+Run the following commands to apply database migrations:
+
+```bash
+python manage.py migrate
+```
 
 #### Step 5: Run the Backend Application
 
