@@ -47,8 +47,8 @@ class FileProcessTests(TestCase):
         data = {"fileUrl": "test.csv"}
         response = self.client.post(self.url, data=json.dumps(data), content_type="application/json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("data", response.json())
-        self.assertIn("types", response.json())
+        self.assertIn("fileUrl", response.json())
+        self.assertIn("total_records", response.json())
 
     def tearDown(self):
         # Clean up any files created during tests

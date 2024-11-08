@@ -1,0 +1,21 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Django Tests in core.tests",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/Backend/RATypeInfer/core/utils/debug.py",
+            "args": [
+                "--verbosity",
+                "2"
+            ],
+            //"django": true,
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/Backend/RATypeInfer/core/utils/",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/Backend"
+            }
+        }
+    ]
+}
