@@ -34,7 +34,9 @@ non_na_ratio = 0.75
 def infer_and_convert_column(column, non_na_ratio=0.75):
     not_na_mask = column.notna()
     column_no_na = column[not_na_mask]
-    
+
+    if pd.api.types.is_datetime64_any_dtype(column):
+        return column
     #bool
     lower_column = column_no_na.astype(str).str.strip().str.lower()
     is_bool = lower_column.isin(bool_values.keys())
