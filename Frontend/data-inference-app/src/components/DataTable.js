@@ -2,28 +2,28 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
 
-const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
+const DataTable = ({ types, setError, setMessage, setTypes, handleTypeChange, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
   const [data, setData] = useState([]); // Data from the server
-  const [types, setTypes] = useState([]);
+  //const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const [totalPages, setTotalPages] = useState(1); // Total pages from server response
   const [loading, setLoading] = useState(false); // Loading state
 
   const pDivStyle = {       // equivalent to "overflow-hidden"
+    display: 'inline-block',
     position: 'relative',        // equivalent to "relative"
-    overflow: 'hidden',          // equivalent to "overflow-hidden"
+    width: 'fit-content',
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
     borderRadius: '0.5rem',  
   };
   
   const talbeStyle = {         // equivalent to "overflow-hidden"
     position: 'relative',        // equivalent to "relative"
-    overflow: 'hidden',          // equivalent to "overflow-hidden"
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
     borderRadius: '0.5rem',  
     marginTop: '1em',
     marginLeft:'1em',
-    width:'95%'
+    width:'auto'
   };
 
   const headerStyle = {
@@ -53,12 +53,6 @@ const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, to
   };
   //console.log("refreshTrigger:"+refreshTrigger);
   //console.log("current page:" + currentPage);
-  const handleTypeChange = (idx, newType) => {
-    const updatedTypes = [...types];
-    updatedTypes[idx] = newType;
-    setTypes(updatedTypes);
-    handleSetTypes(updatedTypes);
-  };
 
   // Fetch data from the server for the current page
   const fetchData = async (page) => {
@@ -89,8 +83,8 @@ const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, to
   useEffect(() => {
     if (currentPage !== 1)
       setCurrentPage(1);
-    // else
-    //   fetchData(currentPage);
+    else
+      fetchData(currentPage);
   }, [refreshTrigger]);
 
   useEffect(() => {
@@ -133,6 +127,7 @@ const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, to
                       <option value="Text">Text</option>
                       <option value="Integer">Integer</option>
                       <option value="Decimal">Decimal</option>
+                      <option value="Complex">Complex</option>
                       <option value="Boolean">Boolean</option>
                       <option value="Date">Date</option>
                       <option value="Duration">Duration</option>
@@ -151,7 +146,7 @@ const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, to
                 key={rowIndex}>
                 {Object.values(row).map((cell, cellIndex) => (
                   <td style={tdStyle}
-                    key={cellIndex}>{cell}</td>
+                    key={cellIndex}> {typeof cell === "boolean" ? (cell ? "True" : "False") : cell}</td>
                 ))}
               </tr>
             ))}

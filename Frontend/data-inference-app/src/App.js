@@ -16,6 +16,17 @@ const App = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showTypeSelectors, setShowTypeSelectors] = useState(false);
 
+  const outerDivStyle = {  
+    width:'auto',
+    overflowY: 'auto',   
+    overflowX: 'auto',
+  };
+  const innerDivStyle = { 
+    width:'auto',
+    //display: 'inline-block',      
+    //width: 'fit-content',
+  };
+
   const onUploaded = (fileUrl, isTusUpload) => {
     setFileUrl(fileUrl);
     setIsTusUpload(isTusUpload);
@@ -28,6 +39,12 @@ const App = () => {
 
   const handleSetTypes = (newTypes) => {
     setTypes(newTypes);
+  };
+  const handleTypeChange = (idx, newType) => {
+    const updatedTypes = [...types];
+    updatedTypes[idx] = newType;
+    setTypes(updatedTypes);
+    handleSetTypes(updatedTypes);
   };
 
   const toggleTypeSelectors = () => {
@@ -45,8 +62,8 @@ const App = () => {
   const isNotBlank = (str) => str && str.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
-      <div className="bg-white shadow-lg rounded-lg p-6 w-full max-w-2xl">
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6"style={outerDivStyle}>
+      <div className="bg-white shadow-lg rounded-lg p-6 w-full" style={innerDivStyle}>
         <FileUpload
           onUploaded={onUploaded}
           setMessage={setMessage}
@@ -62,10 +79,12 @@ const App = () => {
           <div className="mt-4">
             {isDataProcessed && (
               <DataTable
+                types={types}
                 totalRecords={totalRecords}
                 setError={setError}
                 setMessage={setMessage}
-                handleSetTypes={handleSetTypes}
+                setTypes={setTypes}
+                handleTypeChange={handleTypeChange}
                 showTypeSelectors={showTypeSelectors}
                 refreshTrigger={refreshTrigger}
                 toggleTypeSelectors={toggleTypeSelectors}

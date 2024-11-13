@@ -5,7 +5,17 @@ import time
 import gc
 import io
 import os
-
+from datetime import datetime
+from .parse_util import *
+    # Try to identify boolean values
+bool_values = {
+        'true': True, 'false': False,
+        'yes': True, 'no': False,
+        '1': True, '0': False,
+        't': True, 'f': False,
+        'y': True, 'n': False,
+        True: True, False: False
+}
 def infer_and_convert_data_types(df, desired_types=None):
     if desired_types is None:
         desired_types = {}
@@ -24,7 +34,14 @@ non_na_ratio = 0.75
 def infer_and_convert_column(column, non_na_ratio=0.75):
     not_na_mask = column.notna()
     column_no_na = column[not_na_mask]
-
+    
+    #bool
+    lower_column = column_no_na.astype(str).str.strip().str.lower()
+    is_bool = lower_column.isin(bool_values.keys())
+    bool_non_na_ratio = is_bool.mean()
+    if bool_non_na_ratio >= non_na_ratio:
+        converted_column = column.astype(str).str.strip().str.lower().map(bool_values).astype('boolean')
+        return converted_column
     # Try converting to numeric (int or float)
     numeric_column = pd.to_numeric(column_no_na, errors='coerce')
     numeric_non_na_ratio = numeric_column.notnull().mean()
@@ -48,16 +65,6 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
             else:
                 return pd.to_numeric(column, errors='coerce').astype('float64')
 
-    # Try converting to datetime
-    # Print row indices where the conversion resulted in NaT (null)
-    # print(f"Processing column: {column.name}")
-    # null_rows = datetime_column[datetime_column.isnull()]
-    # print("Rows with null datetime values:\n", null_rows.index.tolist())
-        
-    # # Print row indices where the conversion was successful
-    # non_null_rows = datetime_column[datetime_column.notnull()]
-    # print("Rows with non-null datetime values:\n", non_null_rows.index.tolist())
-    # print(datetime_non_na_ratio)
     datetime_column_dayfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=True)
     datetime_non_na_ratio_dayfirst = datetime_column_dayfirst.notnull().mean()
     
@@ -96,22 +103,6 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
     if complex_non_na_ratio >= non_na_ratio:
         return complex_column.astype('complex128')
 
-    # Try to identify boolean values
-    bool_values = {
-        'true': True, 'false': False,
-        'yes': True, 'no': False,
-        '1': True, '0': False,
-        't': True, 'f': False,
-        'y': True, 'n': False,
-        True: True, False: False
-    }
-    lower_column = column_no_na.astype(str).str.strip().str.lower()
-    is_bool = lower_column.isin(bool_values.keys())
-    bool_non_na_ratio = is_bool.mean()
-    if bool_non_na_ratio >= non_na_ratio:
-        converted_column = column.astype(str).str.strip().str.lower().map(bool_values).astype('boolean')
-        return converted_column
-
     # Check for categorical data
     unique_ratio = column_no_na.nunique() / len(column_no_na)
     if unique_ratio <= 0.4:
@@ -143,6 +134,7 @@ def convert_column_to_type(column, desired_type):
 
         elif desired_type == 'Integer':
             # Convert column to numeric, coercing errors to NaN
+            column = column.replace(r'[^0-9\.\+\-]', '', regex=True)
             numeric_column = pd.to_numeric(column, errors='coerce')
             if numeric_column.notnull().any():
                 # Determine the smallest integer type that fits the data
@@ -162,6 +154,7 @@ def convert_column_to_type(column, desired_type):
 
         elif desired_type == 'Decimal':
             # Convert to float64
+            column = column.replace(r'[^0-9\.\+\-]', '', regex=True)
             numeric_column = pd.to_numeric(column, errors='coerce')
             # Convert to float64
             if numeric_column.between(np.finfo(np.float32).min, np.finfo(np.float32).max).all():
@@ -170,31 +163,30 @@ def convert_column_to_type(column, desired_type):
                 return pd.to_numeric(column, errors='coerce').astype('float64')
 
         elif desired_type == 'Boolean':
-            # Map common boolean representations
-            bool_values = {
-                'true': True, 'false': False,
-                'yes': True, 'no': False,
-                '1': True, '0': False,
-                't': True, 'f': False,
-                'y': True, 'n': False,
-                True: True, False: False
-            }
             # Convert to lowercase strings for mapping
             lower_column = column.astype(str).str.strip().str.lower()
             converted_column = lower_column.map(bool_values)
             # Any value not in bool_values will be NaN
-            return converted_column.astype('boolean')
+            return converted_column
 
         elif desired_type == 'Date':
             # Convert to datetime64[ns]
-            # Convert with dayfirst=True
+            # Convert with dayfirst=Truedef parse_dates(date_str):
+            if pd.api.types.is_datetime64_any_dtype(column):
+                return column
+            column = column.astype(str)
+            column = column.replace(r'(\d+)(st|nd|rd|th)', r'\1', regex=True)
+            print(column)
+            NonStandardDate = column.apply(parse_dates)
+            print(NonStandardDate)
+            if(NonStandardDate.notnull().mean()>non_na_ratio):
+                return NonStandardDate
+            #column = column.apply(lambda x: x.strip())
             datefirst = pd.to_datetime(column, errors='coerce', dayfirst=True)
             non_na_ratio_datefirst = datefirst.notnull().mean()
-
             # Convert with dayfirst=False
             monthfirst = pd.to_datetime(column, errors='coerce', dayfirst=False)
             non_na_ratio_monthfirst = monthfirst.notnull().mean()
-
             # Compare the non-null ratios and return the conversion with the higher ratio
             if non_na_ratio_datefirst >= non_na_ratio_monthfirst:
                 return datefirst
@@ -203,7 +195,8 @@ def convert_column_to_type(column, desired_type):
 
         elif desired_type == 'Duration':
             # Convert to timedelta64[ns]
-            return pd.to_timedelta(column, errors='coerce')
+            return column.apply(parse_duration_string)
+            #return pd.to_timedelta(column, errors='coerce')
 
         elif desired_type == 'Category':
             # Convert to category
@@ -288,6 +281,7 @@ def load_and_process(file_path):
     df_processed = infer_and_convert_data_types(df)
 
     return df_processed
+
 def capture_info(df, name):
     """Capture the .info() output of a DataFrame and return it as a string."""
     buffer = io.StringIO()

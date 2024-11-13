@@ -30,6 +30,7 @@ def process(request):
     is_Tus = data.get('isTusUpload', False)
     if(specify_types_manually):
         types = data.get('types', None)
+        print(types)
     file_path = ""
     if(is_Tus):
         upload = Upload.objects.get(guid=UUID(fileUrl))
@@ -160,13 +161,11 @@ def view_data(request):
         df_page = df.iloc[start_idx:end_idx].copy()
         
         # Process the paginated data
-        df_page = df_page.replace({np.nan: None})
         datetime_cols = df_page.select_dtypes(include=['datetime64[ns]']).columns
-        
         # Apply formatting function only to datetime columns
         for col in datetime_cols:
             df_page[col] = df_page[col].apply(format_date_based_on_precision)
-        
+        df_page = df_page.replace({np.nan: None})
         # Convert the modified DataFrame to JSON
         json_data = df_page.to_dict(orient="records")
         
@@ -177,7 +176,7 @@ def view_data(request):
             "page_size": page_size,
             "records": json_data,
             "types": column_types,
-        }, safe=False)
+        }, safe=False, encoder=ComplexEncoder)
         
     except Exception as e:
         traceback.print_exc()
@@ -186,4 +185,11 @@ def view_data(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
 
+from django.core.serializers.json import DjangoJSONEncoder
 
+class ComplexEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, complex):
+            # Format the complex number as a string, like "5+2j"
+            return f"{obj.real}+{obj.imag}j" if obj.imag >= 0 else f"{obj.real}{obj.imag}j"
+        return super().default(obj)
