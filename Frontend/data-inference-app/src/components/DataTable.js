@@ -79,11 +79,18 @@ const DataTable = ({ setError, setMessage, handleSetTypes, showTypeSelectors, to
     }
   };
 
+  // useEffect(() => {
+  //   if (currentPage !== 1)
+  //     setCurrentPage(1);
+  //   else
+  //     fetchData(currentPage);
+  // }, [refreshTrigger, currentPage]);
+
   useEffect(() => {
     if (currentPage !== 1)
       setCurrentPage(1);
-    else
-      fetchData(currentPage);
+    // else
+    //   fetchData(currentPage);
   }, [refreshTrigger]);
 
   useEffect(() => {
