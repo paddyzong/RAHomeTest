@@ -15,10 +15,29 @@ from .utils.data_processing import *
 import math
 from rest_framework_tus.models import get_upload_model
 from uuid import UUID
+from .celery.celery_util import *
+
 
 Upload = get_upload_model()
 processed_data = None
 # Create your views here.
+def test_celery(request):
+    file_path = "/Users/haopengzong/Home Test/RAHomeTest/sample_data/sample_data.csv"  # Update with your actual file path
+    chunksize = 50000  # Number of rows per chunk
+
+    column_names = get_column_names(file_path)
+
+    # Submit tasks to workers and retrieve results
+    print("Submitting tasks to Celery workers...")
+    async_result = submit_chunks_to_workers(file_path, chunksize,column_names)
+
+    # Wait for results and print data type counts
+    if async_result.ready():
+        print("All tasks completed successfully!")
+        print("Results processed.")
+    else:
+        print("Tasks are still running. Please check back later.")
+
 def process(request):
     data = json.loads(request.body)  # Parse JSON data
     fileUrl = data.get('fileUrl', None)
