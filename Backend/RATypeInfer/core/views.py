@@ -22,21 +22,19 @@ Upload = get_upload_model()
 processed_data = None
 # Create your views here.
 def test_celery(request):
-    file_path = "/Users/haopengzong/Home Test/RAHomeTest/sample_data/sample_data.csv"  # Update with your actual file path
-    chunksize = 50000  # Number of rows per chunk
+    file_path = "/Users/haopengzong/Home Test/RAHomeTest/sample_data/celery_sample_data.csv"  # Update with your actual file path
+    chunksize = 50  # Number of rows per chunk
 
     column_names = get_column_names(file_path)
 
     # Submit tasks to workers and retrieve results
     print("Submitting tasks to Celery workers...")
-    async_result = submit_chunks_to_workers(file_path, chunksize,column_names)
+    df = submit_chunks_to_workers(file_path, chunksize,column_names)
 
     # Wait for results and print data type counts
-    if async_result.ready():
-        print("All tasks completed successfully!")
-        print("Results processed.")
-    else:
-        print("Tasks are still running. Please check back later.")
+    return JsonResponse({
+        "records": df,
+    }, safe=False, encoder=ComplexEncoder)
 
 def process(request):
     data = json.loads(request.body)  # Parse JSON data
@@ -133,21 +131,7 @@ def upload(request):
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-def view_data(request):
-    data = json.loads(request.body)
-    page = int(data.get('page', 1))
-    page_size = int(data.get('pageSize', 50))
-    
-    try:
-        global processed_data
-        df = processed_data
-        
-        if df is None or df.empty:
-            return JsonResponse(
-                {"error": "No data has been processed yet."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        data_type_mapping = {
+data_type_mapping = {
             'object': 'Text',
             'string': 'Text',
             'int8': 'Integer',
@@ -168,6 +152,21 @@ def view_data(request):
             'complex': 'Complex',
             'complex128': 'Complex'
         }
+
+def view_data(request):
+    data = json.loads(request.body)
+    page = int(data.get('page', 1))
+    page_size = int(data.get('pageSize', 50))
+    
+    try:
+        global processed_data
+        df = processed_data
+        
+        if df is None or df.empty:
+            return JsonResponse(
+                {"error": "No data has been processed yet."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         column_types = [data_type_mapping.get(dtype, "Unknown") for dtype in df.dtypes.astype(str)]
         # Calculate pagination parameters

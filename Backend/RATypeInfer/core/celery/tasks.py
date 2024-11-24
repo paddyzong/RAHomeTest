@@ -11,12 +11,10 @@ def add(x, y):
     return x + y
 
 @shared_task
-def process_chunk(file_path, index, start_offset, end_offset, column_names=None):
+def process_chunk(file_path, index, start_offset, end_offset, column_names=None, desired_type=None):
     """
     Processes a specific chunk of a file based on byte offsets.
     """
-    print(11111111111)
-    print(file_path)
     with open(file_path, 'rb') as f:
         f.seek(start_offset)
         if end_offset is None:
@@ -24,16 +22,13 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None)
         else:
             raw_data = f.read(end_offset - start_offset).decode('utf-8')  # Read the specified range
 
-        
     # Remove partial rows if not at the start
-    if start_offset != 0:
-        raw_data = raw_data[raw_data.find('\n') + 1:]
-    
+    print("raw_data before:"+str(raw_data))
     # Read into a DataFrame
     df = pd.read_csv(StringIO(raw_data), header=None, names=column_names)
-    df = infer_and_convert_data_types(df)
-    # Perform some processing (modify as needed)
-    store_df_as_redis_hash(redis_client,file_path,df)
+    df = infer_and_convert_data_types(df,desired_type)
+    #store_df_as_redis_hash(redis_client,file_path + ":" +str(index),df)
+    store_df_as_redis_hash_batch(redis_client,file_path + ":" +str(index),df)
     return {
         "chunk_index": index,
         "start_offset": start_offset,
@@ -44,5 +39,25 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None)
 def store_df_as_redis_hash(redis_client, key, df):
     #df = df.fillna("") 
     for idx, row in df.iterrows():
+        hash_key = f"{key}:{idx}"
         json_data = row.to_json()
-        redis_client.set(f"{key}:{idx}", json_data)
+        redis_client.set(hash_key, json_data)
+        redis_client.expire(hash_key, 3600)
+
+def store_df_as_redis_hash_batch(redis_client, key, df, batch_size=100):
+    total_rows = len(df)
+    for start_idx in range(0, total_rows, batch_size):
+        end_idx = min(start_idx + batch_size, total_rows)
+        batch = df.iloc[start_idx:end_idx]  # Slice the DataFrame for the batch  
+        # Use Redis pipeline for batch updates
+        pipeline = redis_client.pipeline()
+        
+        for idx, row in batch.iterrows():
+            hash_key = f"{key}:{idx}"
+            json_data = row.to_json()
+            pipeline.set(hash_key, json_data)
+            pipeline.expire(hash_key, 3600)  # Set expiry to 1 hour
+        
+        pipeline.execute()  # Execute all commands in the pipeline
+
+    print(f"Successfully stored {total_rows} rows in Redis.")

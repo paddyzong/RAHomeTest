@@ -34,7 +34,6 @@ non_na_ratio = 0.75
 def infer_and_convert_column(column, non_na_ratio=0.75):
     not_na_mask = column.notna()
     column_no_na = column[not_na_mask]
-
     if pd.api.types.is_datetime64_any_dtype(column):
         return column
     #bool
@@ -104,11 +103,12 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
     complex_non_na_ratio = complex_column.notnull().mean()
     if complex_non_na_ratio >= non_na_ratio:
         return complex_column.astype('complex128')
-
+    
     # Check for categorical data
-    unique_ratio = column_no_na.nunique() / len(column_no_na)
-    if unique_ratio <= 0.4:
-        return column.astype('category')
+    if(len(column_no_na)>0):
+        unique_ratio = column_no_na.nunique() / len(column_no_na)
+        if unique_ratio <= 0.4:
+            return column.astype('category')
 
     # Return original column if no conversion applies
     return column
@@ -178,9 +178,7 @@ def convert_column_to_type(column, desired_type):
                 return column
             column = column.astype(str)
             column = column.replace(r'(\d+)(st|nd|rd|th)', r'\1', regex=True)
-            print(column)
             NonStandardDate = column.apply(parse_dates)
-            print(NonStandardDate)
             if(NonStandardDate.notnull().mean()>non_na_ratio):
                 return NonStandardDate
             #column = column.apply(lambda x: x.strip())
