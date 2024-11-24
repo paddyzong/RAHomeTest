@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
 
-const DataTable = ({ types, setError, setMessage, setTypes, handleTypeChange, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
+const DataTable = ({ types, setError, fileUrl,
+  isCelery, isTusUpload, setMessage, setTypes, handleTypeChange, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
   const [data, setData] = useState([]); // Data from the server
   //const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
@@ -60,7 +61,7 @@ const DataTable = ({ types, setError, setMessage, setTypes, handleTypeChange, sh
     setError(null);
     setMessage(null);
     try {
-      const response = await axios.post('/core/view/', { page, });
+      const response = await axios.post('/core/view/', { page, fileUrl, isCelery, isTusUpload, });
       //console.log(response);
       setData(response.data.records); // Update data with records from response
       setTypes(response.data.types);

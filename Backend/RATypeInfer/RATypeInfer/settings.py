@@ -145,7 +145,19 @@ CORS_ALLOWED_ORIGINS = [
     'http://127.0.0.1:3000',
 ]
 
+REDIS_CONFIG = {
+    'HOST': os.getenv('REDIS_HOST', 'localhost'),
+    'PORT': int(os.getenv('REDIS_PORT', 6379)),
+    'DB': int(os.getenv('REDIS_DB', 0)),
+    'PASSWORD': os.getenv('REDIS_PASSWORD', None),  # Optional: Redis password
+    'SSL': os.getenv('REDIS_SSL', False) == 'True', # Optional: Use SSL if required
+}
+
 # CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_TASK_SERIALIZER = 'json'
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+# Define the Redis scheme (rediss for SSL, redis for non-SSL)
+REDIS_SCHEME = "rediss" if REDIS_CONFIG['SSL'] else "redis"
+REDIS_PASSWORD_PART = f":{REDIS_CONFIG['PASSWORD']}@" if REDIS_CONFIG['PASSWORD'] else ""
+
+CELERY_BROKER_URL = f"{REDIS_SCHEME}://{REDIS_PASSWORD_PART}{REDIS_CONFIG['HOST']}:{REDIS_CONFIG['PORT']}/{REDIS_CONFIG['DB']}"
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL

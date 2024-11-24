@@ -2,16 +2,17 @@ import React from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
 
-const SubmitButton = ({ types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
+const SubmitButton = ({ buttonText = 'Process', isCelery = false, setIsCelery, types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
   const handleSubmit = async () => {
     try {
-      const response = await axios.post('/core/process/', { fileUrl, isTusUpload, types, specifyTypesManually: showTypeSelectors, });
+      const response = await axios.post('/core/process/', { fileUrl, isTusUpload, isCelery, types, specifyTypesManually: showTypeSelectors, });
       if (response.data.total_records <= 0) {
         alert("No data available.");
         return;
       }
       setMessage(null);
       setError(null);
+      setIsCelery(isCelery);
       setIsDataProcessed(true);
       onProcessComplete();
       setTotalRecords(response.data.total_records);
@@ -37,7 +38,7 @@ const SubmitButton = ({ types, fileUrl, isTusUpload, setMessage, setError, setTo
     }
   };
 
-  return <StyledButton style={{marginTop:'1em'}} onClick={handleSubmit}>Process</StyledButton>;
+  return <StyledButton style={{marginTop:'1em'}} onClick={handleSubmit}>{buttonText}</StyledButton>;
 };
 
 export default SubmitButton;

@@ -1,17 +1,16 @@
 from celery import shared_task
 import pandas as pd
 from io import StringIO
-import redis
 from ..utils.data_processing import *
+from ..utils.redis_client import *
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
-
+redis_client = get_redis_client()
 @shared_task
 def add(x, y):
     return x + y
 
 @shared_task
-def process_chunk(file_path, index, start_offset, end_offset, column_names=None, desired_type=None):
+def process_chunk(file_path, index, start_offset, end_offset, column_names=None, desired_types=None):
     """
     Processes a specific chunk of a file based on byte offsets.
     """
@@ -26,7 +25,7 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None,
     print("raw_data before:"+str(raw_data))
     # Read into a DataFrame
     df = pd.read_csv(StringIO(raw_data), header=None, names=column_names)
-    df = infer_and_convert_data_types(df,desired_type)
+    df = infer_and_convert_data_types(df,desired_types)
     #store_df_as_redis_hash(redis_client,file_path + ":" +str(index),df)
     store_df_as_redis_hash_batch(redis_client,file_path + ":" +str(index),df)
     return {

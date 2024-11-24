@@ -9,6 +9,7 @@ const App = () => {
   const [types, setTypes] = useState(null);
   const [fileUrl, setFileUrl] = useState("");
   const [isTusUpload, setIsTusUpload] = useState(false);
+  const [isCelery, setIsCelery] = useState(false);
   const [message, setMessage] = useState(null);
   const [isDataProcessed, setIsDataProcessed] = useState(false);
   const [error, setError] = useState("");
@@ -56,6 +57,7 @@ const App = () => {
     setFileUrl("");
     setTypes(null);
     setShowTypeSelectors(false);
+    setIsCelery(false);
     setError(""); // Clear error when resetting
   };
 
@@ -80,6 +82,9 @@ const App = () => {
             {isDataProcessed && (
               <DataTable
                 types={types}
+                fileUrl={fileUrl}
+                isCelery={isCelery}
+                isTusUpload={isTusUpload}
                 totalRecords={totalRecords}
                 setError={setError}
                 setMessage={setMessage}
@@ -96,6 +101,23 @@ const App = () => {
               types={types}
               fileUrl={fileUrl}
               isTusUpload={isTusUpload}
+              setIsCelery={setIsCelery}
+              setData={handleSetData}
+              setMessage={setMessage}
+              setTotalRecords={setTotalRecords}
+              showTypeSelectors={showTypeSelectors}
+              setIsDataProcessed={setIsDataProcessed}
+              onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
+              setError={setError}
+            />
+            <SubmitButton
+              buttonText = 'Use Celery to process'
+              isCelery = {true}
+              data={data}
+              types={types}
+              fileUrl={fileUrl}
+              isTusUpload={isTusUpload}
+              setIsCelery={setIsCelery}
               setData={handleSetData}
               setMessage={setMessage}
               setTotalRecords={setTotalRecords}

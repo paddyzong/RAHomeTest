@@ -3,7 +3,9 @@ from collections import Counter
 from ..utils.data_processing import *
 from .tasks import *
 from collections import defaultdict
+from ..utils.redis_client import *
 
+redis_client = get_redis_client()
 def calculate_byte_offsets(file_path, chunksize):
     byte_offsets = []  # Start at the beginning of the file
     with open(file_path, 'rb') as f:
@@ -23,11 +25,16 @@ def calculate_byte_offsets(file_path, chunksize):
         print("end offset:"+str(end_offset))
     if byte_offsets[-1] != end_offset:
         byte_offsets.append(end_offset)  # End of file marker
+    redis_client.set(f"{file_path}:total_records", lines_read)
+    redis_client.expire(f"{file_path}:total_records", 3600)
+    redis_client.set(f"{file_path}:chunksize", chunksize)
+    redis_client.expire(f"{file_path}:chunksize", 3600)
+    redis_client.set(f"{file_path}:total_chunks", len(byte_offsets)-1)
+    redis_client.expire(f"{file_path}:total_chunks", 3600)
     return byte_offsets
 
-redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 import json
-def submit_chunks_to_workers(file_path, chunksize, column_names=None):
+def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_types=None):
     # Calculate byte offsets
     byte_offsets = calculate_byte_offsets(file_path, chunksize)
     print(byte_offsets)
@@ -40,7 +47,7 @@ def submit_chunks_to_workers(file_path, chunksize, column_names=None):
     for i in range(len(byte_offsets) - 1):
         start_offset = byte_offsets[i]
         end_offset = byte_offsets[i + 1]
-        tasks.append(process_chunk.s(file_path, i, start_offset, end_offset, column_names)) 
+        tasks.append(process_chunk.s(file_path, i, start_offset, end_offset, column_names,desired_types)) 
 
     # Submit tasks as a group
     task_group = group(tasks)
