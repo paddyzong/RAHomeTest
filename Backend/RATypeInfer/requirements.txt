@@ -23,3 +23,5 @@ typing_extensions==4.12.2
 tzdata==2024.2
 isodate==0.7.2
 word2number==1.1
+celery==5.4.0
+redis==5.2.0

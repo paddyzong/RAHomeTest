@@ -21,19 +21,31 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None,
         else:
             raw_data = f.read(end_offset - start_offset).decode('utf-8')  # Read the specified range
 
-    # Remove partial rows if not at the start
-    print("raw_data before:"+str(raw_data))
     # Read into a DataFrame
     df = pd.read_csv(StringIO(raw_data), header=None, names=column_names)
     df = infer_and_convert_data_types(df,desired_types)
+    types = list(df.dtypes.astype(str)) 
+    datetime_cols = df.select_dtypes(include=['datetime64[ns]']).columns
+
+    for col in datetime_cols:
+        df[col] = df[col].apply(format_date_based_on_precision)
+    df = df.applymap(complex_to_string)
     #store_df_as_redis_hash(redis_client,file_path + ":" +str(index),df)
     store_df_as_redis_hash_batch(redis_client,file_path + ":" +str(index),df)
     return {
         "chunk_index": index,
         "start_offset": start_offset,
         "end_offset": end_offset,
-        "column_types": list(df.dtypes.astype(str))  # Convert column types to strings
+        "column_types": types  # Convert column types to strings
     }  # Return processed data as a dictionary
+
+import math
+def complex_to_string(value):
+    if isinstance(value, complex):
+        if math.isnan(value.real) or math.isnan(value.imag):
+            return ""
+        return f"{value.real}+{value.imag}j" if value.imag >= 0 else f"{value.real}{value.imag}j"
+    return value
 
 def store_df_as_redis_hash(redis_client, key, df):
     #df = df.fillna("") 

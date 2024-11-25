@@ -1,6 +1,13 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:latest
+    container_name: redis-broker
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
   frontend:
     container_name: frontend
     build:
@@ -18,7 +25,10 @@ services:
       - ./frontend:/frontend
 
   backend:
+    image: backend
     container_name: backend
+    depends_on:
+      - redis
     build:
       context: ./Backend/RATypeInfer
       dockerfile: Dockerfile
@@ -26,11 +36,27 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
     networks:
       - app-network
     volumes:
-      - ./backend:/backend
-
+      - ./media:/app/media  # Share the media folder
+  celery:
+    image: backend
+    container_name: celery
+    depends_on:
+      - redis
+    command: celery -A RATypeInfer worker --loglevel=info
+    # build:
+    #   context: ./Backend/RATypeInfer
+    #   dockerfile: Dockerfile-celery
+    environment:
+      - PYTHONUNBUFFERED=1
+      - REDIS_HOST=redis
+    networks:
+      - app-network
+    volumes:
+      - ./media:/app/media  # Share the media folder
 networks:
   app-network:
     driver: bridge

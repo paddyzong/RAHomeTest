@@ -22,7 +22,6 @@ def calculate_byte_offsets(file_path, chunksize):
                 byte_offsets.append(f.tell())  # Get byte offset of the next line
         f.seek(0, 2)  # Seek to the end of the file
         end_offset = f.tell()  # Get the offset
-        print("end offset:"+str(end_offset))
     if byte_offsets[-1] != end_offset:
         byte_offsets.append(end_offset)  # End of file marker
     redis_client.set(f"{file_path}:total_records", lines_read)
@@ -37,7 +36,7 @@ import json
 def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_types=None):
     # Calculate byte offsets
     byte_offsets = calculate_byte_offsets(file_path, chunksize)
-    print(byte_offsets)
+
     json_data = json.dumps(byte_offsets)
     key = file_path + ":offsets"
     redis_client.set(key, json_data)
@@ -79,8 +78,6 @@ def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_ty
     redis_client.set(key, json_data)
     redis_client.expire(key, 3600)  
 
-    for col, (most_frequent_type, count) in most_frequent_types_with_counts.items():
-        print(f"Column {col}: Most frequent type is '{most_frequent_type}' with count {count}")
     tasks = []
     for result_index,result in enumerate(results):
         should_continue_outer = False  # Flag to skip to the next iteration of the outer loop

@@ -30,7 +30,7 @@ const DataTable = ({ types, setError, fileUrl,
   const headerStyle = {
     paddingTop: '0.25rem',     // equivalent to "py-1" (padding-top)
     paddingBottom: '0.25rem',  // equivalent to "py-1" (padding-bottom)
-    padding: '1rem',           // equivalent to "p-4" (general padding)
+    padding: '0.25rem',           // equivalent to "p-4" (general padding)
     border: '1px solid #ccc',  // equivalent to "border" (approximate)
     textAlign: 'center',       // equivalent to "text-center"
   };
@@ -43,12 +43,14 @@ const DataTable = ({ types, setError, fileUrl,
   const trStyle = {
     paddingTop: '0.5rem',     // equivalent to "py-5" (padding-top)
     paddingBottom: '0.5rem',  // equivalent to "py-5" (padding-bottom)
+    paddingLeft: '0.25rem',      
+    paddingRight: '0.25rem',     
   };
   const tdStyle = {
     paddingTop: '0.5rem',       // Reduce padding to make cells smaller
     paddingBottom: '0.5rem',    // Reduce padding to make cells smaller
-    paddingLeft: '0.5rem',      // Reduce padding to make cells smaller
-    paddingRight: '0.5rem',     // Reduce padding to make cells smaller
+    paddingLeft: '0.25rem',      // Reduce padding to make cells smaller
+    paddingRight: '0.25rem',     // Reduce padding to make cells smaller
     border: '1px solid #ccc',   // equivalent to "border" (approximate)
     textAlign: 'center',        // equivalent to "text-center"
   };

@@ -5,6 +5,13 @@ import StyledButton from './StyledButton';
 const SubmitButton = ({ buttonText = 'Process', isCelery = false, setIsCelery, types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
   const handleSubmit = async () => {
     try {
+      if (fileUrl.endsWith(".xlsx") || fileUrl.endsWith(".xls")) {
+        if(isCelery)
+          {
+            alert('Celery processes for excel files are not supported!');
+            return
+          }
+      }
       const response = await axios.post('/core/process/', { fileUrl, isTusUpload, isCelery, types, specifyTypesManually: showTypeSelectors, });
       if (response.data.total_records <= 0) {
         alert("No data available.");

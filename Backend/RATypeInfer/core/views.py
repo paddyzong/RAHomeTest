@@ -60,7 +60,7 @@ def process(request):
     if is_celery:
         column_names = get_column_names(file_path)
         print("Submitting tasks to Celery workers...")
-        df = submit_chunks_to_workers(file_path, chunksize,column_names)
+        df = submit_chunks_to_workers(file_path, chunksize,column_names,types)
         total_records = redis_client.get(f"{file_path}:total_records")
         if total_records is not None:
             total_records = int(total_records.decode('utf-8'))
