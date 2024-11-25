@@ -3,7 +3,7 @@ kind: CronJob
 metadata:
   name: scale-celery-up
 spec:
-  schedule: "48 10 * * *" 
+  schedule: "10 23 * * *" 
   jobTemplate:
     spec:
       template:
