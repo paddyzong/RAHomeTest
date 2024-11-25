@@ -9,6 +9,7 @@ services:
     networks:
       - app-network
   frontend:
+    image: frontend
     container_name: frontend
     build:
       context: ./Frontend/data-inference-app
