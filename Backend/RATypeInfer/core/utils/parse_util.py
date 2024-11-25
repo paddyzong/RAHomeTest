@@ -24,6 +24,26 @@ def parse_dates(date_str):
             continue
     return pd.NaT
 
+def parse_datetime_column(column, non_na_ratio=0.75):
+    if pd.api.types.is_datetime64_any_dtype(column):
+        return column
+    tempcolumn = column.astype(str)
+    tempcolumn = tempcolumn.replace(r'(\d+)(st|nd|rd|th)', r'\1', regex=True)
+    NonStandardDate = tempcolumn.apply(parse_dates)
+    if(NonStandardDate.notnull().mean()>non_na_ratio):
+        return NonStandardDate
+    #column = column.apply(lambda x: x.strip())
+    datefirst = pd.to_datetime(column, errors='coerce', dayfirst=True)
+    non_na_ratio_datefirst = datefirst.notnull().mean()
+    # Convert with dayfirst=False
+    monthfirst = pd.to_datetime(column, errors='coerce', dayfirst=False)
+    non_na_ratio_monthfirst = monthfirst.notnull().mean()
+    # Compare the non-null ratios and return the conversion with the higher ratio
+    if non_na_ratio_datefirst >= non_na_ratio_monthfirst:
+        return datefirst
+    else:
+        return monthfirst
+    
 def parse_duration_string(duration_str):
     if pd.isna(duration_str):
         return pd.NaT

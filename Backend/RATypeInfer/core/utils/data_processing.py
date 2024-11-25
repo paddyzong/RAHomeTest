@@ -44,7 +44,9 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
         converted_column = column.astype(str).str.strip().str.lower().map(bool_values).astype('boolean')
         return converted_column
     # Try converting to numeric (int or float)
-    numeric_column = pd.to_numeric(column_no_na, errors='coerce')
+    numeric_column = column_no_na.astype(str).replace(',', '', regex=True).str.strip()
+    print(numeric_column)
+    numeric_column = pd.to_numeric(numeric_column, errors='coerce')
     numeric_non_na_ratio = numeric_column.notnull().mean()
     if numeric_non_na_ratio >= non_na_ratio:
         # Determine if integer or float
@@ -52,45 +54,28 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
             # All values are integers
             min_val, max_val = numeric_column.min(), numeric_column.max()
             if min_val >= np.iinfo(np.int8).min and max_val <= np.iinfo(np.int8).max:
-                return pd.to_numeric(column, errors='coerce').astype('Int8')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('Int8')
             elif min_val >= np.iinfo(np.int16).min and max_val <= np.iinfo(np.int16).max:
-                return pd.to_numeric(column, errors='coerce').astype('Int16')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('Int16')
             elif min_val >= np.iinfo(np.int32).min and max_val <= np.iinfo(np.int32).max:
-                return pd.to_numeric(column, errors='coerce').astype('Int32')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('Int32')
             else:
-                return pd.to_numeric(column, errors='coerce').astype('Int64')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('Int64')
         else:
             # Contains floats
             if numeric_column.between(np.finfo(np.float32).min, np.finfo(np.float32).max).all():
-                return pd.to_numeric(column, errors='coerce').astype('float32')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('float32')
             else:
-                return pd.to_numeric(column, errors='coerce').astype('float64')
+                return pd.to_numeric(numeric_column, errors='coerce').astype('float64')
+    datetime_column = parse_datetime_column(column_no_na)
+    if datetime_column.notnull().mean() >= non_na_ratio:
+        return datetime_column
 
-    datetime_column_dayfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=True)
-    datetime_non_na_ratio_dayfirst = datetime_column_dayfirst.notnull().mean()
-    
-    # Fallback: Attempt conversion with dayfirst=False if the first attempt failed
-    datetime_column_monthfirst = pd.to_datetime(column_no_na, errors='coerce', dayfirst=False)
-    datetime_non_na_ratio_monthfirst = datetime_column_monthfirst.notnull().mean()
-    
-    if datetime_non_na_ratio_dayfirst >= non_na_ratio and datetime_non_na_ratio_monthfirst >= non_na_ratio:
-    # Both exceed non_na_ratio; choose the one with the higher ratio
-        if datetime_non_na_ratio_dayfirst >= datetime_non_na_ratio_monthfirst:
-            return pd.to_datetime(column, errors='coerce', dayfirst=True)
-        else:
-            return pd.to_datetime(column, errors='coerce', dayfirst=False)
-    elif datetime_non_na_ratio_dayfirst >= non_na_ratio:
-        # Only dayfirst=True meets the threshold
-        return pd.to_datetime(column, errors='coerce', dayfirst=True)
-    elif datetime_non_na_ratio_monthfirst >= non_na_ratio:
-        # Only dayfirst=False meets the threshold
-        return pd.to_datetime(column, errors='coerce', dayfirst=False)
-
-    # Try converting to timedelta
-    timedelta_column = pd.to_timedelta(column_no_na, errors='coerce')
+    timedelta_column = column_no_na.apply(parse_duration_string)
+    #pd.to_timedelta(column_no_na, errors='coerce')
     timedelta_non_na_ratio = timedelta_column.notnull().mean()
     if timedelta_non_na_ratio >= non_na_ratio:
-        return pd.to_timedelta(column, errors='coerce')
+        return timedelta_column
 
     # Try converting to complex numbers using a helper function
     def safe_complex(x):
@@ -172,26 +157,7 @@ def convert_column_to_type(column, desired_type):
             return converted_column
 
         elif desired_type == 'Date':
-            # Convert to datetime64[ns]
-            # Convert with dayfirst=Truedef parse_dates(date_str):
-            if pd.api.types.is_datetime64_any_dtype(column):
-                return column
-            column = column.astype(str)
-            column = column.replace(r'(\d+)(st|nd|rd|th)', r'\1', regex=True)
-            NonStandardDate = column.apply(parse_dates)
-            if(NonStandardDate.notnull().mean()>non_na_ratio):
-                return NonStandardDate
-            #column = column.apply(lambda x: x.strip())
-            datefirst = pd.to_datetime(column, errors='coerce', dayfirst=True)
-            non_na_ratio_datefirst = datefirst.notnull().mean()
-            # Convert with dayfirst=False
-            monthfirst = pd.to_datetime(column, errors='coerce', dayfirst=False)
-            non_na_ratio_monthfirst = monthfirst.notnull().mean()
-            # Compare the non-null ratios and return the conversion with the higher ratio
-            if non_na_ratio_datefirst >= non_na_ratio_monthfirst:
-                return datefirst
-            else:
-                return monthfirst
+            return parse_datetime_column(column)
 
         elif desired_type == 'Duration':
             # Convert to timedelta64[ns]
