@@ -45,7 +45,6 @@ def infer_and_convert_column(column, non_na_ratio=0.75):
         return converted_column
     # Try converting to numeric (int or float)
     numeric_column = column_no_na.astype(str).replace(',', '', regex=True).str.strip()
-    print(numeric_column)
     numeric_column = pd.to_numeric(numeric_column, errors='coerce')
     numeric_non_na_ratio = numeric_column.notnull().mean()
     if numeric_non_na_ratio >= non_na_ratio:

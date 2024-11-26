@@ -7,7 +7,7 @@ connection_pool = redis.ConnectionPool(
     port=redis_config['PORT'],
     db=redis_config['DB'],
     password=redis_config['PASSWORD'],
-    ssl=redis_config['SSL']
+    #ssl=redis_config['SSL']
 )
 
 def get_redis_client():
