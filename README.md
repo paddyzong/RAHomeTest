@@ -89,8 +89,12 @@ Run the following commands to apply database migrations:
 ```bash
 python manage.py migrate
 ```
+#### Step 6: Configure Redis settings
 
-#### Step 5: Run the Backend Application
+Configure the redis settings in settings.py
+
+
+#### Step 7: Run the Backend Application
 
 Start the backend server:
 
@@ -98,6 +102,13 @@ Start the backend server:
 python manage.py runserver
 ```
 
+#### Step 8: Run Clery workers
+
+Start a celery worker:
+
+```bash
+celery -A RATypeInfer worker --loglevel=info
+```
 ### Frontend Setup
 
 #### Step 1: Navigate to the Frontend Directory
