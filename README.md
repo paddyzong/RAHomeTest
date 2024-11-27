@@ -7,11 +7,8 @@ Key features of the project include:
 - **Advanced Data Type Inference:** Accurately identifies the most appropriate data type for each column in CSV or Excel files, addressing common issues where columns default to the 'object' data type.
 - **Performance Optimization with Multithreading and Celery:** Efficiently processes large datasets by leveraging multithreading and Celery workers to avoid memory issues and reduce processing time.
 - **Scalability with Kubernetes (k8s):** Deployed using Kubernetes to manage containerized applications, ensuring scalability and high availability.
-- **User Interaction:** Provides a user-friendly interface that allows users to upload datasets, view processed data, and override inferred data types if necessary.
-- **Robust Backend and Frontend Development:**
-  - **Backend:** Built with Django, incorporating Python scripts for data processing, and includes models, views, and APIs for seamless data handling.
-  - **Frontend:** Developed using React (or your preferred JavaScript framework), offering an interactive platform for users to engage with the application.
-
+- **Large File Uploads with TUS Protocol:** Supports resumable and reliable large file uploads using the TUS protocol, allowing users to upload big datasets without interruption.
+- **User Interaction:** Provides a user-friendly interface that allows users to upload datasets, view processed data, and 
 This guide will help you set up and run the project using either Docker or by manually setting up the backend and frontend on your local machine. Follow the instructions under **Option 1** or **Option 2** based on your preference.
 
 # Project Setup Guide
