@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
-import { Upload } from 'tus-js-client'; // Import Upload directly
+import { Upload } from 'tus-js-client'; 
+import { useDataContext } from './DataContext';
 
 const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProcessed }) => {
   const [file, setFile] = useState(null);
+  const { clearData } = useDataContext();
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
   // const [error, setError] = useState('');
 
   const handleFileChange = (e) => {
+    clearData();
     setFile(e.target.files[0]);
     setIsDataProcessed(false);
     setMessage(null);

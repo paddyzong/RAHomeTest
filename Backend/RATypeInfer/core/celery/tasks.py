@@ -36,6 +36,7 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None,
         "chunk_index": index,
         "start_offset": start_offset,
         "end_offset": end_offset,
+        "total_records": len(df),
         "column_types": types  # Convert column types to strings
     }  # Return processed data as a dictionary
 
