@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import FileUpload from './components/FileUpload';
 import DataTable from './components/DataTable';
 import SubmitButton from './components/SubmitButton';
+import { DataProvider } from './components/DataContext';
 import './style.css';
 
 const App = () => {
@@ -17,13 +18,13 @@ const App = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showTypeSelectors, setShowTypeSelectors] = useState(false);
 
-  const outerDivStyle = {  
-    width:'auto',
-    overflowY: 'auto',   
+  const outerDivStyle = {
+    width: 'auto',
+    overflowY: 'auto',
     overflowX: 'auto',
   };
-  const innerDivStyle = { 
-    width:'auto',
+  const innerDivStyle = {
+    width: 'auto',
     //display: 'inline-block',      
     //width: 'fit-content',
   };
@@ -64,70 +65,73 @@ const App = () => {
   const isNotBlank = (str) => str && str.trim().length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6"style={outerDivStyle}>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6" style={outerDivStyle}>
       <div className="bg-white shadow-lg rounded-lg p-6 w-full" style={innerDivStyle}>
-        <FileUpload
-          onUploaded={onUploaded}
-          setMessage={setMessage}
-          resetFile={handleFileReset}
-          setIsDataProcessed={setIsDataProcessed}
-          setError={setError}
-        />
+        <DataProvider>
+          <FileUpload
+            onUploaded={onUploaded}
+            setMessage={setMessage}
+            resetFile={handleFileReset}
+            setIsDataProcessed={setIsDataProcessed}
+            setError={setError}
+          />
 
-        {message && (<p className="text-center text-green-500 my-2">{message}</p>)}
-        {error && (<p className="text-center text-red-500 my-2">{error}</p>)}
+          {message && (<p className="text-center text-green-500 my-2">{message}</p>)}
+          {error && (<p className="text-center text-red-500 my-2">{error}</p>)}
 
-        {fileUrl && (
-          <div className="mt-4">
-            {isDataProcessed && (
-              <DataTable
-                types={types}
-                fileUrl={fileUrl}
-                isCelery={isCelery}
-                isTusUpload={isTusUpload}
-                totalRecords={totalRecords}
-                setError={setError}
-                setMessage={setMessage}
-                setTypes={setTypes}
-                handleTypeChange={handleTypeChange}
-                showTypeSelectors={showTypeSelectors}
-                refreshTrigger={refreshTrigger}
-                toggleTypeSelectors={toggleTypeSelectors}
-              />
-            )}
-
-            <SubmitButton
-              data={data}
-              types={types}
-              fileUrl={fileUrl}
-              isTusUpload={isTusUpload}
-              setIsCelery={setIsCelery}
-              setData={handleSetData}
-              setMessage={setMessage}
-              setTotalRecords={setTotalRecords}
-              showTypeSelectors={showTypeSelectors}
-              setIsDataProcessed={setIsDataProcessed}
-              onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
-              setError={setError}
-            />
-            <SubmitButton
-              buttonText = 'Use Celery to process'
-              isCelery = {true}
-              data={data}
-              types={types}
-              fileUrl={fileUrl}
-              isTusUpload={isTusUpload}
-              setIsCelery={setIsCelery}
-              setData={handleSetData}
-              setMessage={setMessage}
-              setTotalRecords={setTotalRecords}
-              showTypeSelectors={showTypeSelectors}
-              setIsDataProcessed={setIsDataProcessed}
-              onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
-              setError={setError}
-            />
-          </div>
-        )}
+          {fileUrl && (
+            <div className="mt-4">
+              {isDataProcessed && (
+                <DataTable
+                  types={types}
+                  fileUrl={fileUrl}
+                  isCelery={isCelery}
+                  isTusUpload={isTusUpload}
+                  totalRecords={totalRecords}
+                  setError={setError}
+                  setMessage={setMessage}
+                  setTypes={setTypes}
+                  handleTypeChange={handleTypeChange}
+                  showTypeSelectors={showTypeSelectors}
+                  refreshTrigger={refreshTrigger}
+                  toggleTypeSelectors={toggleTypeSelectors}
+                />
+              )}
+              <div>
+                <SubmitButton
+                  data={data}
+                  types={types}
+                  fileUrl={fileUrl}
+                  isTusUpload={isTusUpload}
+                  setIsCelery={setIsCelery}
+                  setData={handleSetData}
+                  setMessage={setMessage}
+                  setTotalRecords={setTotalRecords}
+                  showTypeSelectors={showTypeSelectors}
+                  setIsDataProcessed={setIsDataProcessed}
+                  onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
+                  setError={setError}
+                />
+                <SubmitButton
+                  buttonText='Use Celery to process'
+                  isCelery={true}
+                  data={data}
+                  types={types}
+                  fileUrl={fileUrl}
+                  isTusUpload={isTusUpload}
+                  setIsCelery={setIsCelery}
+                  setData={handleSetData}
+                  setMessage={setMessage}
+                  setTotalRecords={setTotalRecords}
+                  showTypeSelectors={showTypeSelectors}
+                  setIsDataProcessed={setIsDataProcessed}
+                  onProcessComplete={() => setRefreshTrigger(prev => prev + 1)}
+                  setError={setError}
+                />
+              </div>
+            </div>
+          )}
+        </DataProvider>
       </div>
     </div>
   );

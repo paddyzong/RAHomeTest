@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import StyledButton from './StyledButton';
+import { useDataContext } from './DataContext';
 
 const DataTable = ({ types, setError, fileUrl,
   isCelery, isTusUpload, setMessage, setTypes, handleTypeChange, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
-  const [data, setData] = useState([]); // Data from the server
+  const { data, setData } = useDataContext();
   //const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const [totalPages, setTotalPages] = useState(1); // Total pages from server response
@@ -15,16 +16,16 @@ const DataTable = ({ types, setError, fileUrl,
     position: 'relative',        // equivalent to "relative"
     width: 'fit-content',
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
-    borderRadius: '0.5rem',  
+    borderRadius: '0.5rem',
   };
-  
+
   const talbeStyle = {         // equivalent to "overflow-hidden"
     position: 'relative',        // equivalent to "relative"
     boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
-    borderRadius: '0.5rem',  
+    borderRadius: '0.5rem',
     marginTop: '1em',
-    marginLeft:'1em',
-    width:'auto'
+    marginLeft: '1em',
+    width: 'auto'
   };
 
   const headerStyle = {
@@ -43,8 +44,8 @@ const DataTable = ({ types, setError, fileUrl,
   const trStyle = {
     paddingTop: '0.5rem',     // equivalent to "py-5" (padding-top)
     paddingBottom: '0.5rem',  // equivalent to "py-5" (padding-bottom)
-    paddingLeft: '0.25rem',      
-    paddingRight: '0.25rem',     
+    paddingLeft: '0.25rem',
+    paddingRight: '0.25rem',
   };
   const tdStyle = {
     paddingTop: '0.5rem',       // Reduce padding to make cells smaller
@@ -109,13 +110,13 @@ const DataTable = ({ types, setError, fileUrl,
   if (data?.length > 0)
     return (
       <div style={pDivStyle}>
-        <StyledButton style={{marginLeft:'1em'}}onClick={toggleTypeSelectors}>
+        <StyledButton style={{ marginLeft: '1em' }} onClick={toggleTypeSelectors}>
           {showTypeSelectors ? 'Let System Infer Types' : 'Specify Types Manually'}
         </StyledButton>
         {loading ? (
           <p>Loading data...</p>
-        ) : <table style={talbeStyle}> 
-          <thead style={{backgroundColor: '#6b7280', color: '#e5e7eb'}}>
+        ) : <table style={talbeStyle}>
+          <thead style={{ backgroundColor: '#6b7280', color: '#e5e7eb' }}>
             <tr>
               {Object.keys(data[0]).map((column, idx) => (
                 <th style={headerStyle}
@@ -123,7 +124,7 @@ const DataTable = ({ types, setError, fileUrl,
                   {column}
                   <br />
                   {showTypeSelectors ? (
-                    <select style={{color:'#374151'}}
+                    <select style={{ color: '#374151' }}
                       value={types[idx] || 'Text'}
                       onChange={(e) => handleTypeChange(idx, e.target.value)}
                     >
@@ -156,7 +157,7 @@ const DataTable = ({ types, setError, fileUrl,
           </tbody>
         </table>}
         {/* Pagination Controls */}
-        <div style={{marginBottom:'1em'}} className="flex items-center justify-center space-x-4 mt-4">
+        <div style={{ marginBottom: '1em' }} className="flex items-center justify-center space-x-4 mt-4">
           <button
             onClick={handlePrevPage}
             disabled={currentPage === 1 || loading}
