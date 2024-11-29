@@ -21,7 +21,7 @@ from .utils.redis_client import *
 
 Upload = get_upload_model()
 processed_data = None
-chunksize = 50  # Number of rows per chunk
+chunksize = 5000  # Number of bytes per chunk
 redis_client = get_redis_client()
 # Create your views here.
 def test_celery(request):
@@ -251,34 +251,43 @@ def view_data(request):
             {"error": str(e)},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
+
+
 def get_chunk_and_row_ranges_by_page(file_url, page, page_size):
-    print(f"{file_url}:total_records")
-    print()
-    total_records = int(redis_client.get(f"{file_url}:total_records").decode('utf-8'))
-    chunksize = int(redis_client.get(f"{file_url}:chunksize").decode('utf-8'))
+    # Retrieve total_records and index_ranges from Redis
+    total_records = int(redis_client.get(f"{file_url}:total_records"))
+    index_ranges = json.loads(redis_client.get(f"{file_url}:index_ranges"))
 
-
+    # Calculate total pages
     total_pages = (total_records + page_size - 1) // page_size  # Ceil division
     if page < 1 or page > total_pages:
         raise ValueError("Invalid page number.")
 
+    # Determine the start and end records for the requested page
     start_record = (page - 1) * page_size
     end_record = min(start_record + page_size, total_records) - 1
 
     result = []
     current_record = start_record
-    while current_record <= end_record:
-        chunk_index = current_record // chunksize
-        rownum_start = current_record % chunksize
-        rownum_end = min(end_record, (chunk_index + 1) * chunksize - 1) % chunksize
 
-        result.append({
-            "chunk_index": chunk_index,
-            "rownum_range": (rownum_start, rownum_end),
-        })
+    # Traverse the index_ranges to calculate chunk and row ranges
+    for chunk_index, (chunk_start, chunk_end) in enumerate(index_ranges):
+        if current_record > end_record:
+            break
 
-        current_record = (chunk_index + 1) * chunksize
+        # If the current range intersects with the chunk range
+        if chunk_start <= end_record and chunk_end >= current_record:
+            # Calculate the rownum range within this chunk
+            rownum_start = max(current_record, chunk_start) - chunk_start
+            rownum_end = min(end_record, chunk_end) - chunk_start
+
+            result.append({
+                "chunk_index": chunk_index,
+                "rownum_range": (rownum_start, rownum_end),
+            })
+
+            # Update the current record to move to the next chunk or range
+            current_record = chunk_end + 1
 
     return result
 

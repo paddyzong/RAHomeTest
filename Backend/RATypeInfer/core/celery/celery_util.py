@@ -7,27 +7,22 @@ from ..utils.redis_client import *
 
 redis_client = get_redis_client()
 def calculate_byte_offsets(file_path, chunksize):
-    byte_offsets = []  # Start at the beginning of the file
+    byte_offsets = []  # Initialize byte offsets
     with open(file_path, 'rb') as f:
-        lines_read = 0
-        s = f.readline()
-        print(s)
-        byte_offsets.append(f.tell()) #offset of header
-        while True:
-            line = f.readline()
-            if not line:
-                break
-            lines_read += 1
-            if lines_read % chunksize == 0:
-                byte_offsets.append(f.tell())  # Get byte offset of the next line
-        f.seek(0, 2)  # Seek to the end of the file
-        end_offset = f.tell()  # Get the offset
-    if byte_offsets[-1] != end_offset:
-        byte_offsets.append(end_offset)  # End of file marker
-    redis_client.set(f"{file_path}:total_records", lines_read)
-    redis_client.expire(f"{file_path}:total_records", 3600)
-    redis_client.set(f"{file_path}:chunksize", chunksize)
-    redis_client.expire(f"{file_path}:chunksize", 3600)
+        # Read and handle the header
+        header = f.readline()  # Read the header line
+        print(header)  # Optional: Display the header for debugging
+        byte_offsets.append(f.tell())  # Offset after the header
+
+        # Calculate chunk offsets
+        file_size = f.seek(0, 2)  # Get the total file size
+        for offset in range(chunksize, file_size, chunksize):
+            f.seek(offset)  # Move to the chunk boundary
+            f.readline()  # Adjust to the next newline
+            byte_offsets.append(f.tell())  # Record the adjusted offset
+        
+        byte_offsets.append(file_size)  # Add the end of file marker
+        
     redis_client.set(f"{file_path}:total_chunks", len(byte_offsets)-1)
     redis_client.expire(f"{file_path}:total_chunks", 3600)
     return byte_offsets
@@ -55,9 +50,26 @@ def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_ty
     column_type_counts = defaultdict(lambda: defaultdict(int))
 
     # Process each result
+    total_records = 0
+    index_ranges = []
+    current_index = 0
+
     for result in results:
+        total_records += result["total_records"]
+        
+        start_index = current_index
+        end_index = current_index + result["total_records"] - 1
+        index_ranges.append((start_index, end_index))
+        
+        current_index = end_index + 1
+        
         for col_index, col_type in enumerate(result["column_types"]):
             column_type_counts[col_index][col_type] += 1
+
+    redis_client.set(f"{file_path}:index_ranges", json.dumps(index_ranges))
+
+    # Optionally, store total_records_sum as well
+    redis_client.set(f"{file_path}:total_records", total_records)
 
     # Convert to a normal dictionary for better visualization
     column_type_counts = {col: dict(type_counts) for col, type_counts in column_type_counts.items()}
