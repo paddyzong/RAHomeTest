@@ -1,0 +1,31 @@
+name: Build and Push Multiple Images to ECR Public
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-push-multiple:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+      - name: Login to ECR Public
+        run: |
+          aws ecr-public get-login-password --region ap-southeast-2 \
+            | docker login --username AWS --password-stdin public.ecr.aws/y2c8v6k4
+
+      # Build and push Backend image
+      - name: Build Backend Image
+        run: |
+          docker build -t backend:latest ./Backend
+          docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
+          docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
+
+      # Build and push Frontend image
+      - name: Build Frontend Image
+        run: |
+          docker build -t frontend:latest ./Frontend
+          docker tag frontend:latest public.ecr.aws/y2c8v6k4/paddy/frontend:latest
+          docker push public.ecr.aws/y2c8v6k4/paddy/frontend:latest
