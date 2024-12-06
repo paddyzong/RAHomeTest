@@ -21,7 +21,7 @@ jobs:
           
       - name: Login to ECR Public
         run: |
-          aws ecr-public get-login-password --region ap-southeast-2 \
+          aws ecr-public get-login-password --region us-east-1 \
             | docker login --username AWS --password-stdin public.ecr.aws/y2c8v6k4
 
       # Build and push Backend image
