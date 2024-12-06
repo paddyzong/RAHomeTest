@@ -27,13 +27,13 @@ jobs:
       # Build and push Backend image
       - name: Build Backend Image
         run: |
-          docker build -t backend:latest ./Backend
+          docker build -t backend:latest ./Backend/RATypeInfer
           docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
           docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
 
       # Build and push Frontend image
       - name: Build Frontend Image
         run: |
-          docker build -t frontend:latest ./Frontend
+          docker build -t frontend:latest ./Frontend/data-inference-app
           docker tag frontend:latest public.ecr.aws/y2c8v6k4/paddy/frontend:latest
           docker push public.ecr.aws/y2c8v6k4/paddy/frontend:latest
