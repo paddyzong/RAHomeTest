@@ -58,7 +58,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
   // Upload function using Tus for large files
   const uploadWithTus = (file) => {
     const upload = new Upload(file, {
-      endpoint: '/tus/files/', // Adjust to your Tus endpoint URL
+      endpoint: '/tus/files/', 
       metadata: {
         filename: file.name,
         filetype: file.type,
@@ -76,7 +76,6 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       onSuccess: () => {
         const url = upload.url;
         const id = url.split("/")[3]
-        //.replace(/-/g, ""); // Removes all hyphens
         console.log("Upload finished:", id);
         onUploaded(id, true)
         setMessage('The file has been uploaded. Click process to infer types.');
