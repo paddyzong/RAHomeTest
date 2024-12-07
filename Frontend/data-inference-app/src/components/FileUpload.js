@@ -31,7 +31,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       uploadWithTus(file);
     } else {
       // Use regular upload for smaller files
-      //uploadWithTus(file);
+      uploadWithTus(file);
       uploadWithAxios(file);
     }
   };
@@ -58,7 +58,8 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
   // Upload function using Tus for large files
   const uploadWithTus = (file) => {
     const upload = new Upload(file, {
-      endpoint: '/tus/files/', 
+      endpoint: 'http://localhost:8000/tus/files/',
+      // endpoint: '/tus/files/', 
       metadata: {
         filename: file.name,
         filetype: file.type,
