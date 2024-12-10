@@ -42,6 +42,8 @@ jobs:
           cd ./Frontend/data-inference-app
           npm install
           npm run build
+        env:
+          CI: false
 
       - name: Deploy to S3
         run: |
