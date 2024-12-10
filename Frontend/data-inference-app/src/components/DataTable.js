@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import StyledButton from './StyledButton';
 import { useDataContext } from './DataContext';
 
@@ -64,7 +64,7 @@ const DataTable = ({ types, setError, fileUrl,
     setError(null);
     setMessage(null);
     try {
-      const response = await axios.post('/core/view/', { page, fileUrl, isCelery, isTusUpload, });
+      const response = await api.post('/core/view/', { page, fileUrl, isCelery, isTusUpload, });
       //console.log(response);
       setData(response.data.records); // Update data with records from response
       setTypes(response.data.types);
