@@ -68,6 +68,19 @@ resource "aws_eks_cluster" "my_eks_cluster" {
   }
 }
 
+resource "aws_eks_node_group" "my_node_group" {
+  cluster_name    = aws_eks_cluster.my_eks_cluster.name
+  node_group_name = "my-node-group"
+  node_role_arn   = aws_iam_role.eks_service_role.arn
+  subnet_ids      = [aws_subnet.public_subnet.id]
+
+  scaling_config {
+    desired_size = 2
+    max_size     = 3
+    min_size     = 2
+  }
+}
+
 # Fetching the EKS Cluster and Authentication info for Kubernetes provider
 data "aws_eks_cluster" "my_eks_cluster" {
   name = aws_eks_cluster.my_eks_cluster.name
@@ -78,33 +91,41 @@ data "aws_eks_cluster_auth" "my_eks_cluster_auth" {
 }
 
 resource "kubernetes_manifest" "backend_deployment" {
-  manifest = yamldecode(file("k8s_aws/backend-deployment.yaml"))
+  manifest   = yamldecode(file("k8s_aws/backend-deployment.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "backend_service" {
-  manifest = yamldecode(file("k8s_aws/backend-service.yaml"))
+  manifest   = yamldecode(file("k8s_aws/backend-service.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "celery_deployment" {
-  manifest = yamldecode(file("k8s_aws/celery-deployment.yaml"))
+  manifest   = yamldecode(file("k8s_aws/celery-deployment.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "celery_scaler_role" {
-  manifest = yamldecode(file("k8s_aws/celery-scaler-role.yaml"))
+  manifest   = yamldecode(file("k8s_aws/celery-scaler-role.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "celery_scaler_rolebinding" {
-  manifest = yamldecode(file("k8s_aws/celery-scaler-rolebinding.yaml"))
+  manifest   = yamldecode(file("k8s_aws/celery-scaler-rolebinding.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "redis_deployment" {
-  manifest = yamldecode(file("k8s_aws/redis-deployment.yaml"))
+  manifest   = yamldecode(file("k8s_aws/redis-deployment.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "redis_service" {
-  manifest = yamldecode(file("k8s_aws/redis-service.yaml"))
+  manifest   = yamldecode(file("k8s_aws/redis-service.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
 
 resource "kubernetes_manifest" "scale_celery_up_cronjob" {
-  manifest = yamldecode(file("k8s_aws/scale-celery-up-cronjob.yaml"))
+  manifest   = yamldecode(file("k8s_aws/scale-celery-up-cronjob.yaml"))
+  depends_on = [aws_eks_cluster.my_eks_cluster, aws_eks_node_group.my_node_group]
 }
