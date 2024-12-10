@@ -47,20 +47,25 @@ resource "aws_vpc" "my_vpc" {
 }
 
 # Public Subnet for EKS Cluster
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "public_subnet_a" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
   availability_zone       = "ap-southeast-2a"  # Adjust based on your region
 }
-
+resource "aws_subnet" "public_subnet_b" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.2.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-southeast-2b"  # Second AZ
+}
 # EKS Cluster creation
 resource "aws_eks_cluster" "my_eks_cluster" {
   name     = "my-cluster"
   role_arn = aws_iam_role.eks_service_role.arn
 
   vpc_config {
-    subnet_ids = [aws_subnet.public_subnet.id]
+    subnet_ids = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
   }
 
   tags = {
@@ -72,7 +77,7 @@ resource "aws_eks_node_group" "my_node_group" {
   cluster_name    = aws_eks_cluster.my_eks_cluster.name
   node_group_name = "my-node-group"
   node_role_arn   = aws_iam_role.eks_service_role.arn
-  subnet_ids      = [aws_subnet.public_subnet.id]
+  subnet_ids      = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
 
   scaling_config {
     desired_size = 2
