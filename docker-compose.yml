@@ -30,6 +30,7 @@ services:
     container_name: backend
     depends_on:
       - redis
+    command: gunicorn --bind 0.0.0.0:8000 RATypeInfer.wsgi
     build:
       context: ./Backend/RATypeInfer
       dockerfile: Dockerfile

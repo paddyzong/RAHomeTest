@@ -138,14 +138,20 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://aabf68860532a45b989e51b09f711f9f-1693294819.ap-southeast-2.elb.amazonaws.com',  # Load Balancer's DNS
+    'http://aabf68860532a45b989e51b09f711f9f-1693294819.ap-southeast-2.elb.amazonaws.com',  # Load Balancer's DNS
     'https://dvn1edhbn5oml.cloudfront.net',
-    "http://localhost:3000",  # React app URL
+    'http://localhost:3000', 
+    'http://localhost',
     'http://127.0.0.1:3000',
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'https://aabf68860532a45b989e51b09f711f9f-1693294819.ap-southeast-2.elb.amazonaws.com',  # Load Balancer's DNS
+    'http://aabf68860532a45b989e51b09f711f9f-1693294819.ap-southeast-2.elb.amazonaws.com',  # Load Balancer's DNS
     'https://dvn1edhbn5oml.cloudfront.net',
     'http://localhost:3000',  # Replace with your frontend URL
+    'http://localhost',
     'http://127.0.0.1:3000',
 ]
 
