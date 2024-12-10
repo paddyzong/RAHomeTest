@@ -36,20 +36,45 @@ resource "aws_iam_role_policy_attachment" "eks_service_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
 }
 
-resource "aws_iam_role_policy_attachment" "ecr_read_only_policy_attachment" {
+resource "aws_iam_role_policy_attachment" "ecr_read_only_policy_attachment_service" {
   role       = aws_iam_role.eks_service_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# IAM Role for EKS Worker Nodes
+resource "aws_iam_role" "eks_node_role" {
+  name = "eks-node-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        },
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+# Attach Required Policies to Node Role
 resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
+  role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.eks_service_role.name
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
+  role       = aws_iam_role.eks_node_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.eks_service_role.name
 }
+
+resource "aws_iam_role_policy_attachment" "ecr_read_only_policy_attachment" {
+  role       = aws_iam_role.eks_node_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
 
 # VPC Creation for EKS Cluster
 resource "aws_vpc" "my_vpc" {
@@ -88,7 +113,7 @@ resource "aws_eks_cluster" "my_eks_cluster" {
 resource "aws_eks_node_group" "my_node_group" {
   cluster_name    = aws_eks_cluster.my_eks_cluster.name
   node_group_name = "my-node-group"
-  node_role_arn   = aws_iam_role.eks_service_role.arn
+  node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
 
   scaling_config {
