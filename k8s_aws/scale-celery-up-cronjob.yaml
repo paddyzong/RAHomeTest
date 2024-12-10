@@ -2,6 +2,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: scale-celery-up
+  namespace: default
 spec:
   schedule: "10 23 * * *" 
   jobTemplate:

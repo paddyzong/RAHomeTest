@@ -4,6 +4,7 @@ metadata:
   labels:
     io.kompose.service: celery
   name: celery
+  namespace: default
 spec:
   replicas: 2
   selector:
