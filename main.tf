@@ -112,3 +112,13 @@ resource "aws_cloudfront_distribution" "ra_frontend_distribution" {
   }
 }
 
+output "s3_bucket_name" {
+  description = "The name of the S3 bucket"
+  value       = aws_s3_bucket.ra_frontend_bucket.bucket
+}
+
+output "s3_bucket_region" {
+  description = "The AWS region of the S3 bucket"
+  value       = aws_s3_bucket.ra_frontend_bucket.region
+}
+
