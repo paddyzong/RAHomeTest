@@ -138,11 +138,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_TRUSTED_ORIGINS = [
+    'dvn1edhbn5oml.cloudfront.net',
     "http://localhost:3000",  # React app URL
     'http://127.0.0.1:3000',
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    'dvn1edhbn5oml.cloudfront.net',
     'http://localhost:3000',  # Replace with your frontend URL
     'http://127.0.0.1:3000',
 ]
