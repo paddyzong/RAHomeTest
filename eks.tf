@@ -51,7 +51,7 @@ resource "aws_subnet" "public_subnet" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-  availability_zone       = "ap-southeast-2"  # Adjust based on your region
+  availability_zone       = "ap-southeast-2a"  # Adjust based on your region
 }
 
 # EKS Cluster creation
