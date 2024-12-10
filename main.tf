@@ -24,11 +24,6 @@ resource "aws_s3_bucket" "ra_frontend_bucket" {
   }
 }
 
-resource "aws_s3_bucket_acl" "ra_frontend_bucket_acl" {
-  bucket = aws_s3_bucket.ra_frontend_bucket.id
-  acl    = "private"
-}
-
 # S3 Bucket Website Configuration
 resource "aws_s3_bucket_website_configuration" "ra_frontend_website" {
   bucket = aws_s3_bucket.ra_frontend_bucket.id
@@ -61,6 +56,12 @@ resource "aws_s3_bucket_policy" "ra_frontend_bucket_policy" {
         }
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.ra_frontend_bucket.arn}/*"
+      },
+      {
+        Effect   = "Deny"
+        Principal = "*"
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.ra_frontend_bucket.arn}/*"
       }
     ]
   })
