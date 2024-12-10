@@ -32,8 +32,17 @@ jobs:
           docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
 
       # Build and push Frontend image
-      - name: Build Frontend Image
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Build the frontend
         run: |
-          docker build -t frontend:latest ./Frontend/data-inference-app
-          docker tag frontend:latest public.ecr.aws/y2c8v6k4/paddy/frontend:latest
-          docker push public.ecr.aws/y2c8v6k4/paddy/frontend:latest
+          cd ./Frontend/data-inference-app
+          npm install
+          npm run build
+
+      - name: Deploy to S3
+        run: |
+          aws s3 sync ./Frontend/data-inference-app/build s3://${{ secrets.AWS_S3_BUCKET_NAME }} --delete
