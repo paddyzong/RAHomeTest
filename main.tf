@@ -62,6 +62,11 @@ resource "aws_s3_bucket_policy" "ra_frontend_bucket_policy" {
         Principal = "*"
         Action   = "s3:GetObject"
         Resource = "${aws_s3_bucket.ra_frontend_bucket.arn}/*"
+        "Condition": {
+            "StringNotEquals": {
+            "aws:PrincipalArn": aws_cloudfront_origin_access_identity.oai.iam_arn
+            }
+        }
       }
     ]
   })
