@@ -32,7 +32,6 @@ spec:
             - name: REDIS_PORT
               value: "6379"              
           image: public.ecr.aws/y2c8v6k4/paddy/backend:latest
-          imagePullPolicy: Never
           name: celery
           volumeMounts:
           - mountPath: /app/media  # Path inside the container
