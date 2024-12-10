@@ -34,7 +34,7 @@ spec:
             - mountPath: /app/media  # Path inside the container
               name: app-data
           command: ["gunicorn"]
-          args: ["--bind", "0.0.0.0:8000", "RATypeInfer.wsgi"]
+          args: ["--bind", "0.0.0.0:8000", "--log-level", "debug", "RATypeInfer.wsgi"]
       restartPolicy: Always
 
       volumes:
