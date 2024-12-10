@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import StyledButton from './StyledButton';
 import { Upload } from 'tus-js-client'; 
 import { useDataContext } from './DataContext';
@@ -31,7 +31,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       uploadWithTus(file);
     } else {
       // Use regular upload for smaller files
-      //uploadWithTus(file);
+      uploadWithTus(file);
       uploadWithAxios(file);
     }
   };
@@ -42,7 +42,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
     formData.append('file', file);
 
     try {
-      const response = await axios.post('/core/upload/', formData, {
+      const response = await api.post('/core/upload/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       onUploaded(response.data.file_url, false);
@@ -55,10 +55,13 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
     }
   };
 
+  const apiBaseUrl = process.env.REACT_APP_API_BASE_URL; // Load from .env
+  const endpoint = `${apiBaseUrl}/tus/files/`; // Construct the endpoint
   // Upload function using Tus for large files
   const uploadWithTus = (file) => {
     const upload = new Upload(file, {
-      endpoint: '/tus/files/', 
+      endpoint: endpoint,
+      // endpoint: '/tus/files/', 
       metadata: {
         filename: file.name,
         filetype: file.type,

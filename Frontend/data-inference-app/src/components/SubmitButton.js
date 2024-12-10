@@ -1,5 +1,5 @@
 import React from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import StyledButton from './StyledButton';
 
 const SubmitButton = ({ buttonText = 'Process', isCelery = false, setIsCelery, types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
@@ -12,7 +12,7 @@ const SubmitButton = ({ buttonText = 'Process', isCelery = false, setIsCelery, t
             return
           }
       }
-      const response = await axios.post('/core/process/', { fileUrl, isTusUpload, isCelery, types, specifyTypesManually: showTypeSelectors, });
+      const response = await api.post('/core/process/', { fileUrl, isTusUpload, isCelery, types, specifyTypesManually: showTypeSelectors, });
       if (response.data.total_records <= 0) {
         alert("No data available.");
         return;

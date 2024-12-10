@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-
+from corsheaders.defaults import default_headers
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -152,7 +154,21 @@ REDIS_CONFIG = {
     'PASSWORD': os.getenv('REDIS_PASSWORD', None),  # Optional: Redis password
     'SSL': os.getenv('REDIS_SSL', False) == 'True', # Optional: Use SSL if required
 }
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'Tus-Resumable',
+    'Upload-Offset',
+    'Upload-Length',
+    'Upload-Metadata',
+]
 
+CORS_EXPOSE_HEADERS = [
+    'Tus-Resumable',
+    'Upload-Offset',
+    'Upload-Length',
+    'Upload-Metadata',
+    'Upload-Expires',
+    'Location'
+]
 # CELERY_ACCEPT_CONTENT = ['json']
 # CELERY_TASK_SERIALIZER = 'json'
 # Define the Redis scheme (rediss for SSL, redis for non-SSL)
