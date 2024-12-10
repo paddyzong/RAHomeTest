@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: backend
+    spec:
+      containers:
+        - env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+          image: public.ecr.aws/y2c8v6k4/paddy/backend:latest
+          imagePullPolicy: Never
+          name: backend
+          ports:
+            - containerPort: 8000
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app/media  # Path inside the container
+              name: app-data
+      restartPolicy: Always
+
+      volumes:
+        - name: app-data
+          hostPath:
+            path: /app/media  # Path on the host
+            type: DirectoryOrCreate

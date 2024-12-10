@@ -31,7 +31,7 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       uploadWithTus(file);
     } else {
       // Use regular upload for smaller files
-      uploadWithTus(file);
+      //uploadWithTus(file);
       uploadWithAxios(file);
     }
   };

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: celery
+  name: celery
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      io.kompose.service: celery
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        io.kompose.service: celery
+    spec:
+      containers:
+        - args:
+            - celery
+            - -A
+            - RATypeInfer
+            - worker
+            - --loglevel=info
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"              
+          image: public.ecr.aws/y2c8v6k4/paddy/backend:latest
+          imagePullPolicy: Never
+          name: celery
+          volumeMounts:
+          - mountPath: /app/media  # Path inside the container
+            name: app-data
+      restartPolicy: Always
+
+      volumes:
+        - name: app-data
+          hostPath:
+            path: /app/media  # Path on the host
+            type: DirectoryOrCreate
