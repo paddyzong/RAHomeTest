@@ -1,3 +1,4 @@
+django-cors-headers
 asgiref==3.8.1
 cffi==1.17.1
 Django==5.1.2
