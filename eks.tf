@@ -84,10 +84,16 @@ resource "aws_eks_node_group" "my_node_group" {
 # Fetching the EKS Cluster and Authentication info for Kubernetes provider
 data "aws_eks_cluster" "my_eks_cluster" {
   name = aws_eks_cluster.my_eks_cluster.name
+  depends_on = [
+    aws_eks_cluster.my_eks_cluster
+  ]
 }
 
 data "aws_eks_cluster_auth" "my_eks_cluster_auth" {
   name = aws_eks_cluster.my_eks_cluster.name
+  depends_on = [
+    aws_eks_cluster.my_eks_cluster
+  ]
 }
 
 resource "kubernetes_manifest" "backend_deployment" {
