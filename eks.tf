@@ -75,7 +75,6 @@ resource "aws_iam_role_policy_attachment" "ecr_read_only_policy_attachment" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-
 # VPC Creation for EKS Cluster
 resource "aws_vpc" "my_vpc" {
   cidr_block           = "10.0.0.0/16"
@@ -83,26 +82,88 @@ resource "aws_vpc" "my_vpc" {
   enable_dns_hostnames = true
 }
 
-# Public Subnet for EKS Cluster
-resource "aws_subnet" "public_subnet_a" {
+# Private Subnet A
+resource "aws_subnet" "private_subnet_a" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "ap-southeast-2a"  # Adjust based on your region
+  map_public_ip_on_launch = false
+  availability_zone       = "ap-southeast-2a"
 }
-resource "aws_subnet" "public_subnet_b" {
+
+# Private Subnet B
+resource "aws_subnet" "private_subnet_b" {
   vpc_id                  = aws_vpc.my_vpc.id
   cidr_block              = "10.0.2.0/24"
-  map_public_ip_on_launch = true
-  availability_zone       = "ap-southeast-2b"  # Second AZ
+  map_public_ip_on_launch = false
+  availability_zone       = "ap-southeast-2b"
 }
+
+resource "aws_subnet" "public_subnet_a" {
+  vpc_id                  = aws_vpc.my_vpc.id
+  cidr_block              = "10.0.3.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "ap-southeast-2a"
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "my_igw" {
+  vpc_id = aws_vpc.my_vpc.id
+}
+
+# Public Route Table
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.my_igw.id
+  }
+}
+
+# Associate Public Subnet with Public Route Table
+resource "aws_route_table_association" "public_subnet_a_assoc" {
+  subnet_id      = aws_subnet.public_subnet_a.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+# NAT Gateway
+resource "aws_eip" "nat_eip" {
+  network_border_group = "ap-southeast-2"
+}
+
+resource "aws_nat_gateway" "nat_gw" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public_subnet_a.id
+}
+
+# Route Table for Private Subnets
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat_gw.id
+  }
+}
+
+# Associate Private Subnets with the Route Table
+resource "aws_route_table_association" "private_subnet_a_assoc" {
+  subnet_id      = aws_subnet.private_subnet_a.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_subnet_b_assoc" {
+  subnet_id      = aws_subnet.private_subnet_b.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
 # EKS Cluster creation
 resource "aws_eks_cluster" "my_eks_cluster" {
   name     = "my-cluster"
   role_arn = aws_iam_role.eks_service_role.arn
 
   vpc_config {
-    subnet_ids = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
+    subnet_ids = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
   }
 
   tags = {
@@ -114,7 +175,7 @@ resource "aws_eks_node_group" "my_node_group" {
   cluster_name    = aws_eks_cluster.my_eks_cluster.name
   node_group_name = "my-node-group"
   node_role_arn   = aws_iam_role.eks_node_role.arn
-  subnet_ids      = [aws_subnet.public_subnet_a.id, aws_subnet.public_subnet_b.id]
+  subnet_ids      = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
 
   scaling_config {
     desired_size = 2
