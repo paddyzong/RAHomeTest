@@ -1,8 +1,8 @@
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.my_eks_cluster.endpoint
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.my_eks_cluster.certificate_authority[0].data)
-  token                  = data.aws_eks_cluster_auth.my_eks_cluster_auth.token
-}
+# provider "kubernetes" {
+#   host                   = data.aws_eks_cluster.my_eks_cluster.endpoint
+#   cluster_ca_certificate = base64decode(data.aws_eks_cluster.my_eks_cluster.certificate_authority[0].data)
+#   token                  = data.aws_eks_cluster_auth.my_eks_cluster_auth.token
+# }
 
 # IAM Role for EKS service
 resource "aws_iam_role" "eks_service_role" {
@@ -156,42 +156,42 @@ resource "aws_route_table_association" "private_subnet_b_assoc" {
   route_table_id = aws_route_table.private_rt.id
 }
 
-resource "aws_eks_cluster" "my_eks_cluster" {
-  name     = "my-cluster"
-  role_arn = aws_iam_role.eks_service_role.arn
+# resource "aws_eks_cluster" "my_eks_cluster" {
+#   name     = "my-cluster"
+#   role_arn = aws_iam_role.eks_service_role.arn
 
-  vpc_config {
-    subnet_ids = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
-  }
+#   vpc_config {
+#     subnet_ids = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
+#   }
 
-  tags = {
-    Name = "my-eks-cluster"
-  }
-}
+#   tags = {
+#     Name = "my-eks-cluster"
+#   }
+# }
 
-resource "aws_eks_node_group" "my_node_group" {
-  cluster_name    = aws_eks_cluster.my_eks_cluster.name
-  node_group_name = "my-node-group"
-  node_role_arn   = aws_iam_role.eks_node_role.arn
-  subnet_ids      = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
+# resource "aws_eks_node_group" "my_node_group" {
+#   cluster_name    = aws_eks_cluster.my_eks_cluster.name
+#   node_group_name = "my-node-group"
+#   node_role_arn   = aws_iam_role.eks_node_role.arn
+#   subnet_ids      = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
 
-  scaling_config {
-    desired_size = 2
-    max_size     = 3
-    min_size     = 2
-  }
-}
+#   scaling_config {
+#     desired_size = 2
+#     max_size     = 3
+#     min_size     = 2
+#   }
+# }
 
-data "aws_eks_cluster" "my_eks_cluster" {
-  name = aws_eks_cluster.my_eks_cluster.name
-  depends_on = [
-    aws_eks_cluster.my_eks_cluster
-  ]
-}
+# data "aws_eks_cluster" "my_eks_cluster" {
+#   name = aws_eks_cluster.my_eks_cluster.name
+#   depends_on = [
+#     aws_eks_cluster.my_eks_cluster
+#   ]
+# }
 
-data "aws_eks_cluster_auth" "my_eks_cluster_auth" {
-  name = aws_eks_cluster.my_eks_cluster.name
-  depends_on = [
-    aws_eks_cluster.my_eks_cluster
-  ]
-}
+# data "aws_eks_cluster_auth" "my_eks_cluster_auth" {
+#   name = aws_eks_cluster.my_eks_cluster.name
+#   depends_on = [
+#     aws_eks_cluster.my_eks_cluster
+#   ]
+# }
