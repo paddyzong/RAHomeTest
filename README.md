@@ -6,10 +6,12 @@ Key features of the project include:
 
 - **Advanced Data Type Inference:** Accurately identifies the most appropriate data type for each column in CSV or Excel files, addressing common issues where columns default to the 'object' data type.
 - **Performance Optimization with Multithreading and Celery:** Efficiently processes large datasets by leveraging multithreading and Celery workers to avoid memory issues and reduce processing time.
-- **Scalability with Kubernetes (k8s):** Deployed using Kubernetes to manage containerized applications, ensuring scalability and high availability.
-- **Large File Uploads with TUS Protocol:** Supports resumable and reliable large file uploads using the TUS protocol, allowing users to upload big datasets.
-- **User Interaction:** Provides a user-friendly interface that allows users to upload datasets, view processed data, and 
-This guide will help you set up and run the project using either Docker or by manually setting up the backend and frontend on your local machine. Follow the instructions under **Option 1** or **Option 2** based on your preference.
+- **Scalability with Kubernetes (EKS):** Deployed using Kubernetes (EKS) to manage containerized applications, ensuring scalability and high availability.
+- **Infrastructure as Code with Terraform and Terraform Cloud:** Utilizes Terraform for defining and provisioning infrastructure, while Terraform Cloud facilitates collaboration, state management, and automation.
+- **Content Delivery with CloudFront and S3:** Implements Amazon S3 for static asset storage and Amazon CloudFront for global content delivery, enhancing performance and reliability.
+- **Continuous Integration and Deployment with GitHub Actions:** Automates the building, testing, and deployment processes. GitHub Actions workflows build the frontend and push it to S3, while the backend is built and pushed to Amazon Elastic Container Registry (ECR).
+- **Large File Uploads with TUS Protocol:** Supports resumable and reliable large file uploads using the TUS protocol, allowing users to upload big datasets seamlessly.
+- **User-Friendly Interface:** Provides an intuitive interface that allows users to upload datasets, view processed data, and interact with the application effortlessly.
 
 # Project Setup Guide
 
