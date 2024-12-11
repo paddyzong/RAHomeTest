@@ -9,7 +9,8 @@ Key features of the project include:
 - **Scalability with Kubernetes (EKS):** Deployed using Kubernetes (EKS) to manage containerized applications, ensuring scalability and high availability.
 - **Infrastructure as Code with Terraform and Terraform Cloud:** Utilizes Terraform for defining and provisioning infrastructure, while Terraform Cloud facilitates collaboration, state management, and automation.
 - **Content Delivery with CloudFront and S3:** Implements Amazon S3 for static asset storage and Amazon CloudFront for global content delivery, enhancing performance and reliability.
-- **Continuous Integration and Deployment with GitHub Actions:** Automates the building, testing, and deployment processes. GitHub Actions workflows build the frontend and push it to S3, while the backend is built and pushed to Amazon Elastic Container Registry (ECR).
+- **Continuous Integration and Deployment with GitHub Actions:** Automates the building, testing, and deployment processes. GitHub Actions workflows build the frontend and push it to S3, build the backend and push it to Amazon Elastic Container Registry (ECR), and perform static code analysis using **Pylint** to ensure code quality and adherence to best practices.
+
 - **Large File Uploads with TUS Protocol:** Supports resumable and reliable large file uploads using the TUS protocol, allowing users to upload big datasets seamlessly.
 - **User-Friendly Interface:** Provides an intuitive interface that allows users to upload datasets, view processed data, and interact with the application effortlessly.
 
