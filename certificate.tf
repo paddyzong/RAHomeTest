@@ -1,4 +1,4 @@
-resource "aws_acm_certificate" "ra_domain_name" {
+resource "aws_acm_certificate" "ra_certificate" {
   domain_name       = "rahometest.click"         # Replace with your domain
   validation_method = "DNS"                 # Can be "DNS" or "EMAIL"
 
@@ -14,7 +14,7 @@ resource "aws_acm_certificate" "ra_domain_name" {
 
 resource "aws_route53_record" "ra_record" {
   for_each = {
-    for dvo in aws_acm_certificate.rahometest.domain_validation_options : dvo.domain_name => {
+    for dvo in aws_acm_certificate.ra_certificate.domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
       type  = dvo.resource_record_type
       value = dvo.resource_record_value
@@ -29,6 +29,6 @@ resource "aws_route53_record" "ra_record" {
 }
 
 resource "aws_acm_certificate_validation" "ra_domain_name" {
-  certificate_arn         = aws_acm_certificate.example.arn
+  certificate_arn         = aws_acm_certificate.ra_certificate.arn
   validation_record_fqdns = [for record in aws_route53_record.ra_record : record.fqdn]
 }
