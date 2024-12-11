@@ -87,7 +87,9 @@ resource "aws_cloudfront_distribution" "ra_frontend_distribution" {
   is_ipv6_enabled     = true
   comment             = "CloudFront Distribution for Frontend"
   default_root_object = "index.html"
-
+  aliases = [
+    "home.rahometest.click", 
+  ]
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
