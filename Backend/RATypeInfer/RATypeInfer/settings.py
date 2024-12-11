@@ -136,6 +136,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+ALLOWED_HOSTS = [
+    'api.rahometest.click',
+    ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://a399138342c4048de8d8d60c859551d6-601397950.ap-southeast-2.elb.amazonaws.com',  
