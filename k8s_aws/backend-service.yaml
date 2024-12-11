@@ -7,11 +7,18 @@ metadata:
   namespace: default
   annotations:
     service.beta.kubernetes.io/aws-load-balancer-type: "alb"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:ap-southeast-2:290431165395:certificate/e120d832-10cf-4da8-b7fb-d6061c0c4e07"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443" # Handle HTTPS on 443
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "HTTP" # Forward to backend via HTTP
 spec:
   type: LoadBalancer 
   ports:
     - name: "8000"
       port: 8000
       targetPort: 8000
+    - name: "https"
+      port: 443          # External port exposed by the LoadBalancer
+      targetPort: 8000   # Internal port on which the backend service is running
+      protocol: TCP
   selector:
     io.kompose.service: backend
