@@ -140,6 +140,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
     'https://a399138342c4048de8d8d60c859551d6-601397950.ap-southeast-2.elb.amazonaws.com',  
     'https://api.rahometest.click',
+    'http://api.rahometest.click',
+    'http://api.rahometest.click/core/upload/',
     'https://dvn1edhbn5oml.cloudfront.net',
     'http://localhost:3000', 
     'http://localhost',
@@ -149,6 +151,8 @@ CSRF_TRUSTED_ORIGINS = [
 CORS_ALLOWED_ORIGINS = [
     'https://a399138342c4048de8d8d60c859551d6-601397950.ap-southeast-2.elb.amazonaws.com',  
     'https://api.rahometest.click',
+    'http://api.rahometest.click',
+    'http://api.rahometest.click/core/upload/',
     'https://dvn1edhbn5oml.cloudfront.net',
     'http://localhost:3000',  # Replace with your frontend URL
     'http://localhost',
