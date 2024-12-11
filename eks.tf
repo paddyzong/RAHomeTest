@@ -175,9 +175,9 @@ resource "aws_eks_node_group" "my_node_group" {
   node_role_arn   = aws_iam_role.eks_node_role.arn
   subnet_ids      = [aws_subnet.private_subnet_a.id, aws_subnet.private_subnet_b.id]
 
-  instance_types = ["t3.micro"]
+  instance_types = ["t3.medium"]
   capacity_type  = "SPOT"
-  
+
   scaling_config {
     desired_size = 2
     max_size     = 3
