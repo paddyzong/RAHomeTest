@@ -5,6 +5,8 @@ metadata:
     io.kompose.service: backend
   name: backend
   namespace: default
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "alb"
 spec:
   type: LoadBalancer 
   ports:
