@@ -1,9 +1,9 @@
 resource "aws_acm_certificate" "ra_certificate" {
-  domain_name       = "rahometest.click"         # Replace with your domain
+  domain_name       = "*.rahometest.click"         # Replace with your domain
   validation_method = "DNS"                 # Can be "DNS" or "EMAIL"
 
   subject_alternative_names = [
-    "www.example.com"                       # Optional: Add alternative domains
+    "rahometest.click"                       # Optional: Add alternative domains
   ]
 
   tags = {
