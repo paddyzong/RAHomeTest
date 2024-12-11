@@ -41,28 +41,8 @@ resource "aws_acm_certificate" "frontend_cert_us_east_1" {
   }
 }
 
-# Route 53 Validation Records for ACM Certificate
-resource "aws_route53_record" "frontend_cert_validation_us_east_1" {
-  for_each = {
-    for dvo in aws_acm_certificate.frontend_cert_us_east_1.domain_validation_options : dvo.domain_name => {
-      name  = dvo.resource_record_name
-      type  = dvo.resource_record_type
-      value = dvo.resource_record_value
-    }
-  }
-
-  zone_id = "Z0787172Q9SOK5I6GQH9"   # Replace with your Route 53 Hosted Zone ID
-  name    = each.value.name
-  type    = each.value.type
-  ttl     = 60
-  records = [each.value.value]
-
-  # Ensure the correct provider is used for Route 53 if it's in a different region
-  # Generally, Route 53 is global, so the default provider is sufficient
-}
-
 resource "aws_acm_certificate_validation" "frontend_cert_validation_us_east_1" {
   provider                  = aws.us_east_1
   certificate_arn           = aws_acm_certificate.frontend_cert_us_east_1.arn
-  validation_record_fqdns   = [for record in aws_route53_record.frontend_cert_validation_us_east_1 : record.fqdn]
+  validation_record_fqdns   = [for record in aws_route53_record.ra_record : record.fqdn]
 }
