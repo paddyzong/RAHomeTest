@@ -5,12 +5,11 @@ import os
 from datetime import datetime, timedelta
 from ..utils.data_processing import *
 
-class TestDataTypeInferenceAndConversion(unittest.TestCase):   
+class TestDataTypeInferenceAndConversion(unittest.TestCase): 
     @classmethod
     def setUpClass(cls):
         # Create a test CSV file
         cls.test_csv_path = "test_data.csv"
-        
         # Define test data
         df = pd.DataFrame({
             'integers': [1, 2, 3, 4, 5],
@@ -19,12 +18,10 @@ class TestDataTypeInferenceAndConversion(unittest.TestCase):
             'strings': ['apple', 'banana', 'cherry', 'date', 'elderberry']
         })
         
-        # Save DataFrame to CSV
         df.to_csv(cls.test_csv_path, index=False)
-
         cls.data_type_test_csv_path = "data_type_test_data.csv"
         
-        # Create a DataFrame with each column representing a different data type
+        #Create a DataFrame with each column representing a different data type
         df = pd.DataFrame({
             'numeric': [1.1, 2.2, np.nan, 4.4, 5.5],
             'integer': [1, 2, 3, np.nan, 5],
@@ -34,7 +31,7 @@ class TestDataTypeInferenceAndConversion(unittest.TestCase):
             'categorical': ['apple', 'banana', 'apple', 'banana', 'apple']
         })
         
-        # Save the DataFrame to a CSV file
+        #Save the DataFrame to a CSV file
         df.to_csv(cls.data_type_test_csv_path, index=False)
 
  
@@ -64,27 +61,33 @@ class TestDataTypeInferenceAndConversion(unittest.TestCase):
 
         # Test numeric column
         converted_column = infer_and_convert_column(df['numeric'])
-        self.assertTrue(pd.api.types.is_float_dtype(converted_column), "Expected float type for numeric column")
+        self.assertTrue(pd.api.types.is_float_dtype(converted_column), 
+                        "Expected float type for numeric column")
 
         # Test integer column
         converted_column = infer_and_convert_column(df['integer'])
-        self.assertTrue(pd.api.types.is_integer_dtype(converted_column), "Expected integer type for integer column")
+        self.assertTrue(pd.api.types.is_integer_dtype(converted_column), 
+                        "Expected integer type for integer column")
 
         # Test datetime column
         converted_column = infer_and_convert_column(df['datetime'])
-        self.assertTrue(pd.api.types.is_datetime64_any_dtype(converted_column), "Expected datetime type for datetime column")
+        self.assertTrue(pd.api.types.is_datetime64_any_dtype(converted_column), 
+                        "Expected datetime type for datetime column")
 
         # Test boolean column
         converted_column = infer_and_convert_column(df['boolean'])
-        self.assertTrue(pd.api.types.is_bool_dtype(converted_column), "Expected boolean type for boolean column")
+        self.assertTrue(pd.api.types.is_bool_dtype(converted_column), 
+                        "Expected boolean type for boolean column")
 
         # Test complex column
         converted_column = infer_and_convert_column(df['complex'])
-        self.assertTrue(pd.api.types.is_complex_dtype(converted_column), "Expected complex type for complex column")
+        self.assertTrue(pd.api.types.is_complex_dtype(converted_column), 
+                        "Expected complex type for complex column")
 
         # Test categorical column
         converted_column = infer_and_convert_column(df['categorical'])
-        self.assertTrue(pd.api.types.is_categorical_dtype(converted_column), "Expected categorical type for categorical column")
+        self.assertTrue(pd.api.types.is_categorical_dtype(converted_column), 
+                        "Expected categorical type for categorical column")
 
     def test_convert_column_to_type_from_csv(self):
         # Load the CSV file into a DataFrame
@@ -92,23 +95,28 @@ class TestDataTypeInferenceAndConversion(unittest.TestCase):
 
         # Test desired conversion to 'Integer'
         converted_column = convert_column_to_type(df['integer'], 'Integer')
-        self.assertTrue(pd.api.types.is_integer_dtype(converted_column), "Expected integer type for Integer conversion")
+        self.assertTrue(pd.api.types.is_integer_dtype(converted_column), 
+                        "Expected integer type for Integer conversion")
 
         # Test desired conversion to 'Decimal'
         converted_column = convert_column_to_type(df['numeric'], 'Decimal')
-        self.assertTrue(pd.api.types.is_float_dtype(converted_column), "Expected float type for Decimal conversion")
+        self.assertTrue(pd.api.types.is_float_dtype(converted_column), 
+                        "Expected float type for Decimal conversion")
 
         # Test desired conversion to 'Date'
         converted_column = convert_column_to_type(df['datetime'], 'Date')
-        self.assertTrue(pd.api.types.is_datetime64_any_dtype(converted_column), "Expected datetime type for Date conversion")
+        self.assertTrue(pd.api.types.is_datetime64_any_dtype(converted_column), 
+                        "Expected datetime type for Date conversion")
 
         # Test desired conversion to 'Boolean'
         converted_column = convert_column_to_type(df['boolean'], 'Boolean')
-        self.assertTrue(pd.api.types.is_bool_dtype(converted_column), "Expected boolean type for Boolean conversion")
+        self.assertTrue(pd.api.types.is_bool_dtype(converted_column), 
+                        "Expected boolean type for Boolean conversion")
 
         # Test desired conversion to 'Complex'
         converted_column = convert_column_to_type(df['complex'], 'Complex')
-        self.assertTrue(pd.api.types.is_complex_dtype(converted_column), "Expected complex type for Complex conversion")
+        self.assertTrue(pd.api.types.is_complex_dtype(converted_column), 
+                        "Expected complex type for Complex conversion")
 
 if __name__ == '__main__':
     unittest.main()
