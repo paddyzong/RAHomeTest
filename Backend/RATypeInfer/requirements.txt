@@ -1,5 +1,6 @@
 django-cors-headers
 gunicorn
+boto3
 asgiref==3.8.1
 cffi==1.17.1
 Django==5.1.2

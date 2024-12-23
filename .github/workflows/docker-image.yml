@@ -17,7 +17,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-southeast-2  # or your chosen region
+          aws-region: ap-southeast-2  
           
       - name: Login to ECR Public
         run: |
@@ -30,6 +30,24 @@ jobs:
           docker build -t backend:latest ./Backend/RATypeInfer
           docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
           docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
+
+      - name: Delete Old ECR Public Images
+        run: |
+          # List all images except the "latest" tag
+          old_images=$(aws ecr-public describe-images \
+            --region us-east-1 \
+            --repository-name paddy/backend \
+            --query 'imageDetails[?contains(imageTags, `latest`)==`false`].[imageDigest]' \
+            --output text)
+
+          # Loop through each old image digest and delete
+          for digest in $old_images; do
+            echo "Deleting image with digest: $digest"
+            aws ecr-public batch-delete-image \
+              --region us-east-1 \
+              --repository-name paddy/backend \
+              --image-ids imageDigest=$digest
+          done
 
       # Build and push Frontend image
       - name: Set up Node.js

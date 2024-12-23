@@ -138,6 +138,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ALLOWED_HOSTS = [
     'api.rahometest.click',
+    'localhost',
     ]
 
 CSRF_TRUSTED_ORIGINS = [
@@ -155,7 +156,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://api.rahometest.click',
     'https://home.rahometest.click',
     'https://dvn1edhbn5oml.cloudfront.net',
-    'http://localhost:3000',  # Replace with your frontend URL
+    'http://localhost:3000',  
     'http://localhost',
     'http://127.0.0.1:3000',
 ]
@@ -190,3 +191,7 @@ REDIS_PASSWORD_PART = f":{REDIS_CONFIG['PASSWORD']}@" if REDIS_CONFIG['PASSWORD'
 
 CELERY_BROKER_URL = f"{REDIS_SCHEME}://{REDIS_PASSWORD_PART}{REDIS_CONFIG['HOST']}:{REDIS_CONFIG['PORT']}/{REDIS_CONFIG['DB']}"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID",'AKIAUHHYL4PJUNC7MMWU')  
+AWS_REGION = os.getenv('AWS_REGION',"ap-southeast-2")  
+S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME',"rahometest-frontend-bucket")

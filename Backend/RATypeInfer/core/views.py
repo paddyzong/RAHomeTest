@@ -1,3 +1,8 @@
+import os
+import math
+import json
+from uuid import UUID
+import traceback
 from django.shortcuts import render
 import pandas as pd
 import numpy as np
@@ -6,17 +11,14 @@ from rest_framework import status
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
-import json
-import os
-import traceback
 from rest_framework.exceptions import ValidationError
 from .utils.file_utils import *
 from .utils.data_processing import *
-import math
+import boto3
 from rest_framework_tus.models import get_upload_model
-from uuid import UUID
 from .celery.celery_util import *
 from .utils.redis_client import *
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 Upload = get_upload_model()
@@ -291,8 +293,36 @@ def get_chunk_and_row_ranges_by_page(file_url, page, page_size):
 
     return result
 
+def get_presigned_url(request):
+    data = json.loads(request.body)
+    file_name = data.get("fileName")
+    file_type = data.get("fileType")
 
-from django.core.serializers.json import DjangoJSONEncoder
+    if not file_name or not file_type:
+        return JsonResponse({"error": "Missing required fields: fileName and fileType"}, status=400)
+
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_REGION,
+    )
+
+    try:
+        presigned_url = s3_client.generate_presigned_url(
+            "put_object",
+            Params={
+                "Bucket": settings.S3_BUCKET_NAME,
+                "Key": f"uploads/{file_name}",                
+                "ContentType": file_type,
+            },
+            HttpMethod='PUT',
+            ExpiresIn=300,  # URL expires in 5 minutes
+        )
+        return JsonResponse({"url": presigned_url}, status=200)
+    except Exception as e:
+        traceback.print_exc()
+        return JsonResponse({"error": str(e)}, status=500)
 
 class ComplexEncoder(DjangoJSONEncoder):
     def default(self, obj):
