@@ -55,7 +55,8 @@ jobs:
             # Print the contents of .env.production for verification
             echo "Contents of .env.production:"
             cat ./Backend/RATypeInfer/.env.production
-            
+
+            echo "Build backend image"
             docker build -t backend:latest ./Backend/RATypeInfer
             docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
             docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest

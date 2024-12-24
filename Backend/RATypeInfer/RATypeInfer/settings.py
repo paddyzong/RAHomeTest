@@ -198,3 +198,7 @@ AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID",'AKIAUHHYL4PJUNC7MMWU')
 AWS_REGION = os.getenv('AWS_REGION',"ap-southeast-2")  
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME',"rahometest-frontend-bucket")
 
+print(AWS_SECRET_ACCESS_KEY)
+print(AWS_ACCESS_KEY_ID)
+print(AWS_REGION)
+print(S3_BUCKET_NAME)
