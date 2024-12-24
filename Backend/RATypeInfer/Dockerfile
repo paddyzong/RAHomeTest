@@ -4,6 +4,10 @@ FROM python:3.12-slim
 # Set a working directory in the container
 WORKDIR /app
 
+ARG AWS_REGION
+ARG S3_BUCKET_NAME
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
 # Copy the requirements file into the container
 COPY requirements.txt .
 
