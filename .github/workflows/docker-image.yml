@@ -41,7 +41,7 @@ jobs:
           old_images=$(aws ecr-public describe-images \
             --region us-east-1 \
             --repository-name paddy/backend \
-            --query 'imageDetails[?contains(imageTags, `latest`)==`false`].[imageDigest]' \
+            --query 'imageDetails[?imageTags == null || contains(imageTags, `latest`)].[imageDigest]' \
             --output text)
 
           # Loop through each old image digest and delete
