@@ -32,7 +32,12 @@ Before you begin, ensure you have the following software installed:
 - [Node.js and npm](https://nodejs.org/en/download/) (for Option 2)
 - [Redis](https://redis.io/download) (for Option 2)
 ---
+## Update kubeconfig for Your EKS Cluster
+Run the following AWS CLI command to generate or update the kubeconfig file for your EKS cluster:
 
+```bash
+aws eks --region ap-southeast-2 update-kubeconfig --name my-cluster
+```
 ## Option 1: Running the Project with Docker
 
 If you prefer to use Docker, follow these steps to build and run the Docker containers.

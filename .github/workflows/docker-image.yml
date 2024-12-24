@@ -49,6 +49,13 @@ jobs:
             echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./Backend/RATypeInfer/.env.production
             echo "AWS_REGION=ap-southeast-2" > ./Backend/RATypeInfer/.env.production
             echo "S3_BUCKET_NAME=rahometest-frontend-bucket" > ./Backend/RATypeInfer/.env.production
+            echo "Listing files in ./Backend/RATypeInfer:"
+            ls -la ./Backend/RATypeInfer
+
+            # Print the contents of .env.production for verification
+            echo "Contents of .env.production:"
+            cat ./Backend/RATypeInfer/.env.production
+            
             docker build -t backend:latest ./Backend/RATypeInfer
             docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
             docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest

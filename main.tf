@@ -128,6 +128,17 @@ resource "aws_cloudfront_distribution" "ra_frontend_distribution" {
   }
 }
 
+resource "aws_route53_record" "cloudfront_cname" {
+  zone_id = "Z0787172Q9SOK5I6GQH9"  # Replace with your Route53 hosted zone ID
+  name    = "home.rahometest.click"          # Replace with your alias domain name
+  type    = "CNAME"
+  ttl     = 300
+
+  records = [
+    aws_cloudfront_distribution.ra_frontend_distribution.domain_name
+  ]
+}
+
 output "s3_bucket_name" {
   description = "The name of the S3 bucket"
   value       = aws_s3_bucket.ra_frontend_bucket.bucket
