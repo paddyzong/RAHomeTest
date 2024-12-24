@@ -68,7 +68,10 @@ resource "aws_s3_bucket_policy" "ra_frontend_bucket_policy" {
         Resource = "${aws_s3_bucket.ra_frontend_bucket.arn}/*"
         "Condition": {
             "StringNotEquals": {
-            "aws:PrincipalArn": aws_cloudfront_origin_access_identity.oai.iam_arn
+            "aws:PrincipalArn": [
+              aws_cloudfront_origin_access_identity.oai.iam_arn,
+              "arn:aws:iam::290431165395:user/paddy"
+              ]
             }
         }
       }
