@@ -27,9 +27,13 @@ jobs:
       # Build and push Backend image
       - name: Build Backend Image
         run: |
-          docker build -t backend:latest ./Backend/RATypeInfer
-          docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
-          docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > ./Backend/RATypeInfer/.env.production
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./Backend/RATypeInfer/.env.production
+            echo "AWS_REGION=ap-southeast-2" > ./Backend/RATypeInfer/.env.production
+            echo "S3_BUCKET_NAME=rahometest-frontend-bucket" > ./Backend/RATypeInfer/.env.production
+            docker build -t backend:latest ./Backend/RATypeInfer
+            docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
+            docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
 
       - name: Delete Old ECR Public Images
         run: |
@@ -58,6 +62,8 @@ jobs:
       - name: Build the frontend
         run: |
           cd ./Frontend/data-inference-app
+            echo "REACT_APP_API_BASE_URL=https://api.rahometest.click" > .env.production
+            echo "REACT_APP_IS_AWS=true" >> .env.production
           npm install
           npm run build
         env:
