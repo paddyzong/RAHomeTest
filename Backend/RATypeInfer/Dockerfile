@@ -8,6 +8,13 @@ ARG AWS_REGION
 ARG S3_BUCKET_NAME
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
+
+# Convert ARGs into ENV variables
+ENV AWS_REGION=$AWS_REGION \
+    S3_BUCKET_NAME=$S3_BUCKET_NAME \
+    AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+    AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+    
 # Copy the requirements file into the container
 COPY requirements.txt .
 
