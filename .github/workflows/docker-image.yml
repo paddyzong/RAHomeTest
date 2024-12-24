@@ -24,20 +24,9 @@ jobs:
           aws ecr-public get-login-password --region us-east-1 \
             | docker login --username AWS --password-stdin public.ecr.aws/y2c8v6k4
 
-      # Build and push Backend image
-      - name: Build Backend Image
-        run: |
-            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > ./Backend/RATypeInfer/.env.production
-            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./Backend/RATypeInfer/.env.production
-            echo "AWS_REGION=ap-southeast-2" > ./Backend/RATypeInfer/.env.production
-            echo "S3_BUCKET_NAME=rahometest-frontend-bucket" > ./Backend/RATypeInfer/.env.production
-            docker build -t backend:latest ./Backend/RATypeInfer
-            docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
-            docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
-
       - name: Delete Old ECR Public Images
         run: |
-          # List all images except the "latest" tag
+          # List all images 
           old_images=$(aws ecr-public describe-images \
             --region us-east-1 \
             --repository-name paddy/backend \
@@ -52,6 +41,17 @@ jobs:
               --repository-name paddy/backend \
               --image-ids imageDigest=$digest
           done
+          
+      # Build and push Backend image
+      - name: Build Backend Image
+        run: |
+            echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" > ./Backend/RATypeInfer/.env.production
+            echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> ./Backend/RATypeInfer/.env.production
+            echo "AWS_REGION=ap-southeast-2" > ./Backend/RATypeInfer/.env.production
+            echo "S3_BUCKET_NAME=rahometest-frontend-bucket" > ./Backend/RATypeInfer/.env.production
+            docker build -t backend:latest ./Backend/RATypeInfer
+            docker tag backend:latest public.ecr.aws/y2c8v6k4/paddy/backend:latest
+            docker push public.ecr.aws/y2c8v6k4/paddy/backend:latest
 
       # Build and push Frontend image
       - name: Set up Node.js
