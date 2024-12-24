@@ -1,8 +1,13 @@
+import math
+from urllib.parse import urlparse
 from celery import shared_task
 import pandas as pd
 from io import StringIO
+import boto3
+from ..utils.file_utils import parse_s3_url
 from ..utils.data_processing import *
 from ..utils.redis_client import *
+from ..utils.S3Client import S3Client
 
 redis_client = get_redis_client()
 @shared_task
@@ -14,12 +19,29 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None,
     """
     Processes a specific chunk of a file based on byte offsets.
     """
-    with open(file_path, 'rb') as f:
-        f.seek(start_offset)
-        if end_offset is None:
-            raw_data = f.read().decode('utf-8')  # Read until the end of the file
-        else:
-            raw_data = f.read(end_offset - start_offset).decode('utf-8')  # Read the specified range
+    # Check if the file path is an S3 URL
+    if file_path.startswith('https'):
+        # Handle S3 file
+        s3_client = S3Client.get_client() 
+        bucket, key = parse_s3_url(file_path)
+        
+        # Calculate range string for S3 GetObject
+        range_str = f'bytes={start_offset}-{end_offset-1 if end_offset else ""}'
+        
+        response = s3_client.get_object(
+            Bucket=bucket,
+            Key=key,
+            Range=range_str
+        )
+        raw_data = response['Body'].read().decode('utf-8')
+    else:
+        # Handle local file
+        with open(file_path, 'rb') as f:
+            f.seek(start_offset)
+            if end_offset is None:
+                raw_data = f.read().decode('utf-8')
+            else:
+                raw_data = f.read(end_offset - start_offset).decode('utf-8')
 
     # Read into a DataFrame
     df = pd.read_csv(StringIO(raw_data), header=None, names=column_names)
@@ -40,7 +62,6 @@ def process_chunk(file_path, index, start_offset, end_offset, column_names=None,
         "column_types": types  # Convert column types to strings
     }  # Return processed data as a dictionary
 
-import math
 def complex_to_string(value):
     if isinstance(value, complex):
         if math.isnan(value.real) or math.isnan(value.imag):

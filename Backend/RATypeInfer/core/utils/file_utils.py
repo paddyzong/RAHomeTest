@@ -2,6 +2,7 @@
 
 import pandas as pd
 from django.core.exceptions import ValidationError
+from urllib.parse import urlparse
 
 def is_csv_file_empty(file_path):
     """Check if a CSV file is empty by reading the first row."""
@@ -24,3 +25,16 @@ def is_excel_file_empty(file_path):
     
     except Exception as e:
         raise ValidationError(f"Error reading Excel file: {e}")
+    
+def parse_s3_url(url):
+    """Parse S3 URL into bucket and key."""
+    parsed = urlparse(url)
+    if parsed.scheme == 's3':
+        bucket = parsed.netloc
+        key = parsed.path.lstrip('/')
+    elif parsed.scheme == 'https' and '.s3.' in parsed.netloc:
+        bucket = parsed.netloc.split('.')[0]
+        key = parsed.path.lstrip('/')
+    else:
+        raise ValueError("Invalid S3 URL format")
+    return bucket, key

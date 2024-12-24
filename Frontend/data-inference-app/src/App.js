@@ -25,8 +25,6 @@ const App = () => {
   };
   const innerDivStyle = {
     width: 'auto',
-    //display: 'inline-block',      
-    //width: 'fit-content',
   };
 
   const onUploaded = (fileUrl, isTusUpload) => {
@@ -39,14 +37,12 @@ const App = () => {
     setData(newData);
   };
 
-  const handleSetTypes = (newTypes) => {
-    setTypes(newTypes);
-  };
   const handleTypeChange = (idx, newType) => {
-    const updatedTypes = [...types];
-    updatedTypes[idx] = newType;
-    setTypes(updatedTypes);
-    handleSetTypes(updatedTypes);
+    setTypes((prevTypes) => {
+      const updatedTypes = [...prevTypes];
+      updatedTypes[idx] = newType;
+      return updatedTypes;
+    });
   };
 
   const toggleTypeSelectors = () => {

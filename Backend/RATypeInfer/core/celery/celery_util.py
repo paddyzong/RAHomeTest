@@ -1,6 +1,10 @@
-from celery import group
 from collections import Counter
+import json
+from celery import group
+import boto3
 from ..utils.data_processing import *
+from ..utils.S3Client import S3Client
+from ..utils.file_utils import parse_s3_url
 from .tasks import *
 from collections import defaultdict
 from ..utils.redis_client import *
@@ -27,10 +31,90 @@ def calculate_byte_offsets(file_path, chunksize):
     redis_client.expire(f"{file_path}:total_chunks", 3600)
     return byte_offsets
 
-import json
+def calculate_byte_offsets_s3(file_path, chunksize=50000):
+    s3_client = S3Client.get_client()
+    bucket, key = parse_s3_url(file_path)
+    byte_offsets = []  # Initialize byte offsets list
+    
+    # Retrieve the object's metadata to get its size
+    try:
+        response = s3_client.head_object(Bucket=bucket, Key=key)
+        file_size = response['ContentLength']
+    except s3_client.exceptions.NoSuchKey:
+        raise FileNotFoundError(f"The object {key} does not exist in bucket {bucket}.")
+    except Exception as e:
+        raise e
+    
+    # Read and handle the header (assuming the first line is the header)
+    # We'll read the first 4KB to locate the first newline character
+    header_range = 'bytes=0-4095'
+    try:
+        header_response = s3_client.get_object(Bucket=bucket, Key=key, Range=header_range)
+        header_data = header_response['Body'].read()
+        newline_pos = header_data.find(b'\n')
+        if newline_pos == -1:
+            raise ValueError("Header newline not found within the first 4KB.")
+        header = header_data[:newline_pos + 1]
+        print(header.decode('utf-8', errors='replace'))  # Optional: Display the header for debugging
+        byte_offsets.append(newline_pos + 1)  # Offset after the header
+    except Exception as e:
+        raise e
+    
+    # Calculate chunk offsets
+    current_offset = byte_offsets[0]  # Start after the header
+    while current_offset < file_size:
+        desired_offset = current_offset + chunksize
+        if desired_offset >= file_size:
+            break  # No more chunks needed
+        
+        # Define the range to search for the next newline
+        range_start = desired_offset
+        range_end = min(desired_offset + 1024, file_size - 1)  # Read the next 1KB
+        range_header = f'bytes={range_start}-{range_end}'
+        
+        try:
+            response = s3_client.get_object(Bucket=bucket, Key=key, Range=range_header)
+            data = response['Body'].read()
+            newline_pos = data.find(b'\n')
+            
+            if newline_pos == -1:
+                # If no newline found in the 1KB window, extend the search
+                # This can be adjusted based on expected line lengths
+                extended_range_end = min(range_end + 4096, file_size - 1)
+                extended_range = f'bytes={range_start}-{extended_range_end}'
+                response = s3_client.get_object(Bucket=bucket, Key=key, Range=extended_range)
+                data = response['Body'].read()
+                newline_pos = data.find(b'\n')
+                if newline_pos == -1:
+                    # As a fallback, set the offset to the end of the file
+                    adjusted_offset = file_size
+                else:
+                    adjusted_offset = range_start + newline_pos + 1
+            else:
+                adjusted_offset = range_start + newline_pos + 1
+            
+            byte_offsets.append(adjusted_offset)
+            current_offset = adjusted_offset
+        except Exception as e:
+            raise e
+    
+    byte_offsets.append(file_size)  # Add the end of file marker
+    
+    # Store the total number of chunks in Redis with a 1-hour expiration
+    total_chunks = len(byte_offsets) - 1
+    print(byte_offsets)
+    redis_key = f"{file_path}:total_chunks"
+    redis_client.set(redis_key, total_chunks)
+    redis_client.expire(redis_key, 3600)  # Expire in 1 hour
+    
+    return byte_offsets
+
 def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_types=None):
     # Calculate byte offsets
-    byte_offsets = calculate_byte_offsets(file_path, chunksize)
+    if file_path.startswith('https'):
+        byte_offsets = calculate_byte_offsets_s3(file_path, chunksize)
+    else:
+        byte_offsets = calculate_byte_offsets(file_path, chunksize)
 
     json_data = json.dumps(byte_offsets)
     key = file_path + ":offsets"
@@ -112,6 +196,20 @@ def get_column_names(file_path):
     """
     Reads the first line of the file to extract column names.
     """
+    if file_path.startswith('https'):
+        s3_client = S3Client.get_client()
+        bucket, key = parse_s3_url(file_path)
+        header_range = 'bytes=0-4095'
+        try:
+            header_response = s3_client.get_object(Bucket=bucket, Key=key, Range=header_range)
+            header_data = header_response['Body'].read()
+            newline_pos = header_data.find(b'\n')
+            if newline_pos == -1:
+                raise ValueError("Header newline not found within first 4KB")
+            header = header_data[:newline_pos].decode('utf-8')
+            return header.split(',')
+        except Exception as e:
+            raise e
     with open(file_path, 'r') as f:
         header_line = f.readline().strip()  # Read the first line and remove extra whitespace
     column_names = header_line.split(',')  # Split by delimiter (default: comma)

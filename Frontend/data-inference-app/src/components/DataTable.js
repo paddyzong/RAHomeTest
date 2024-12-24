@@ -11,17 +11,17 @@ const DataTable = ({ types, setError, fileUrl,
   const [totalPages, setTotalPages] = useState(1); // Total pages from server response
   const [loading, setLoading] = useState(false); // Loading state
 
-  const pDivStyle = {       // equivalent to "overflow-hidden"
+  const pDivStyle = {       
     display: 'inline-block',
-    position: 'relative',        // equivalent to "relative"
+    position: 'relative',        
     width: 'fit-content',
-    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', 
     borderRadius: '0.5rem',
   };
 
-  const talbeStyle = {         // equivalent to "overflow-hidden"
-    position: 'relative',        // equivalent to "relative"
-    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', // equivalent to "shadow-md" (approximate)
+  const talbeStyle = {         
+    position: 'relative',        
+    boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)', 
     borderRadius: '0.5rem',
     marginTop: '1em',
     marginLeft: '1em',
@@ -29,43 +29,39 @@ const DataTable = ({ types, setError, fileUrl,
   };
 
   const headerStyle = {
-    paddingTop: '0.25rem',     // equivalent to "py-1" (padding-top)
-    paddingBottom: '0.25rem',  // equivalent to "py-1" (padding-bottom)
-    padding: '0.25rem',           // equivalent to "p-4" (general padding)
-    border: '1px solid #ccc',  // equivalent to "border" (approximate)
-    textAlign: 'center',       // equivalent to "text-center"
+    paddingTop: '0.25rem',     
+    paddingBottom: '0.25rem',  
+    padding: '0.25rem',           
+    border: '1px solid #ccc',  
+    textAlign: 'center',       
   };
 
   const tBodyStyle = {
-    backgroundColor: '#FFFFFF', // equivalent to "bg-white" or "bg-[#FFFFFF]"
-    color: '#6b7280',           // equivalent to "text-gray-500" or "text-[#6b7280]"
+    backgroundColor: '#FFFFFF', 
+    color: '#6b7280',           
   };
 
   const trStyle = {
-    paddingTop: '0.5rem',     // equivalent to "py-5" (padding-top)
-    paddingBottom: '0.5rem',  // equivalent to "py-5" (padding-bottom)
+    paddingTop: '0.5rem',     
+    paddingBottom: '0.5rem',  
     paddingLeft: '0.25rem',
     paddingRight: '0.25rem',
   };
   const tdStyle = {
-    paddingTop: '0.5rem',       // Reduce padding to make cells smaller
-    paddingBottom: '0.5rem',    // Reduce padding to make cells smaller
-    paddingLeft: '0.25rem',      // Reduce padding to make cells smaller
-    paddingRight: '0.25rem',     // Reduce padding to make cells smaller
-    border: '1px solid #ccc',   // equivalent to "border" (approximate)
-    textAlign: 'center',        // equivalent to "text-center"
+    paddingTop: '0.5rem',       
+    paddingBottom: '0.5rem',    
+    paddingLeft: '0.25rem',      
+    paddingRight: '0.25rem',     
+    border: '1px solid #ccc',   
+    textAlign: 'center',        
   };
-  //console.log("refreshTrigger:"+refreshTrigger);
-  //console.log("current page:" + currentPage);
 
-  // Fetch data from the server for the current page
   const fetchData = async (page) => {
     setLoading(true);
     setError(null);
     setMessage(null);
     try {
       const response = await api.post('/core/view/', { page, fileUrl, isCelery, isTusUpload, });
-      //console.log(response);
       setData(response.data.records); // Update data with records from response
       setTypes(response.data.types);
       setTotalPages(response.data.total_pages); // Set total pages from response
@@ -76,13 +72,6 @@ const DataTable = ({ types, setError, fileUrl,
       setLoading(false);
     }
   };
-
-  // useEffect(() => {
-  //   if (currentPage !== 1)
-  //     setCurrentPage(1);
-  //   else
-  //     fetchData(currentPage);
-  // }, [refreshTrigger, currentPage]);
 
   useEffect(() => {
     if (currentPage !== 1)
