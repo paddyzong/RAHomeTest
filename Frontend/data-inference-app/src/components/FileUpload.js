@@ -71,6 +71,8 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       });
 
       setMessage("File uploaded successfully to AWS S3!");
+      const fileKey = url.split('?')[0];
+      onUploaded(fileKey, false);
     } catch (error) {
       console.error("Error uploading to S3:", error);
       setError("S3 upload failed. Please try again.");
@@ -98,7 +100,8 @@ const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProc
       },
       onSuccess: () => {
         const url = upload.url;
-        const id = url.split("/")[3]
+        const id = url.split("/").slice(-2)[0]
+        console.log("Upload finished:", url);
         console.log("Upload finished:", id);
         onUploaded(id, true)
         setMessage('The file has been uploaded. Click process to infer types.');

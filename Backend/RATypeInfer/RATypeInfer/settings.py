@@ -12,10 +12,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 from corsheaders.defaults import default_headers
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -191,7 +191,10 @@ REDIS_PASSWORD_PART = f":{REDIS_CONFIG['PASSWORD']}@" if REDIS_CONFIG['PASSWORD'
 
 CELERY_BROKER_URL = f"{REDIS_SCHEME}://{REDIS_PASSWORD_PART}{REDIS_CONFIG['HOST']}:{REDIS_CONFIG['PORT']}/{REDIS_CONFIG['DB']}"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+load_dotenv()
 
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY",'')
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID",'AKIAUHHYL4PJUNC7MMWU')  
 AWS_REGION = os.getenv('AWS_REGION',"ap-southeast-2")  
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME',"rahometest-frontend-bucket")
+

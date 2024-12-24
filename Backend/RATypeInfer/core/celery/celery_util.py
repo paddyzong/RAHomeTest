@@ -3,6 +3,8 @@ import json
 from celery import group
 import boto3
 from ..utils.data_processing import *
+from ..utils.S3Client import S3Client
+from ..utils.file_utils import parse_s3_url
 from .tasks import *
 from collections import defaultdict
 from ..utils.redis_client import *
@@ -29,10 +31,9 @@ def calculate_byte_offsets(file_path, chunksize):
     redis_client.expire(f"{file_path}:total_chunks", 3600)
     return byte_offsets
 
-def calculate_byte_offsets_s3(bucket, key, chunksize, redis_client, s3_client=None):
-    if s3_client is None:
-        s3_client = boto3.client('s3')
-    
+def calculate_byte_offsets_s3(file_path, chunksize=50000):
+    s3_client = S3Client.get_client()
+    bucket, key = parse_s3_url(file_path)
     byte_offsets = []  # Initialize byte offsets list
     
     # Retrieve the object's metadata to get its size
@@ -101,7 +102,8 @@ def calculate_byte_offsets_s3(bucket, key, chunksize, redis_client, s3_client=No
     
     # Store the total number of chunks in Redis with a 1-hour expiration
     total_chunks = len(byte_offsets) - 1
-    redis_key = f"{bucket}/{key}:total_chunks"
+    print(byte_offsets)
+    redis_key = f"{file_path}:total_chunks"
     redis_client.set(redis_key, total_chunks)
     redis_client.expire(redis_key, 3600)  # Expire in 1 hour
     
@@ -109,7 +111,10 @@ def calculate_byte_offsets_s3(bucket, key, chunksize, redis_client, s3_client=No
 
 def submit_chunks_to_workers(file_path, chunksize, column_names=None, desired_types=None):
     # Calculate byte offsets
-    byte_offsets = calculate_byte_offsets(file_path, chunksize)
+    if file_path.startswith('https'):
+        byte_offsets = calculate_byte_offsets_s3(file_path, chunksize)
+    else:
+        byte_offsets = calculate_byte_offsets(file_path, chunksize)
 
     json_data = json.dumps(byte_offsets)
     key = file_path + ":offsets"
@@ -191,6 +196,20 @@ def get_column_names(file_path):
     """
     Reads the first line of the file to extract column names.
     """
+    if file_path.startswith('https'):
+        s3_client = S3Client.get_client()
+        bucket, key = parse_s3_url(file_path)
+        header_range = 'bytes=0-4095'
+        try:
+            header_response = s3_client.get_object(Bucket=bucket, Key=key, Range=header_range)
+            header_data = header_response['Body'].read()
+            newline_pos = header_data.find(b'\n')
+            if newline_pos == -1:
+                raise ValueError("Header newline not found within first 4KB")
+            header = header_data[:newline_pos].decode('utf-8')
+            return header.split(',')
+        except Exception as e:
+            raise e
     with open(file_path, 'r') as f:
         header_line = f.readline().strip()  # Read the first line and remove extra whitespace
     column_names = header_line.split(',')  # Split by delimiter (default: comma)

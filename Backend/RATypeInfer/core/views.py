@@ -6,20 +6,20 @@ import traceback
 from django.shortcuts import render
 import pandas as pd
 import numpy as np
+import boto3
 from django.http import JsonResponse
 from rest_framework import status
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from django.conf import settings
+from django.core.serializers.json import DjangoJSONEncoder
 from rest_framework.exceptions import ValidationError
 from .utils.file_utils import *
 from .utils.data_processing import *
-import boto3
 from rest_framework_tus.models import get_upload_model
 from .celery.celery_util import *
 from .utils.redis_client import *
-from django.core.serializers.json import DjangoJSONEncoder
-
+from .utils.S3Client import S3Client
 
 Upload = get_upload_model()
 processed_data = None
@@ -57,8 +57,13 @@ def process(request):
     if(is_Tus):
         upload = Upload.objects.get(guid=UUID(fileUrl))
         fileUrl = str(upload.uploaded_file)
-    file_path = os.path.join(settings.MEDIA_ROOT,fileUrl) 
-    file_size = os.path.getsize(file_path) 
+    elif fileUrl.startswith('https'):
+        file_path = fileUrl
+        
+    if not fileUrl.startswith('https'):
+        file_path = os.path.join(settings.MEDIA_ROOT,fileUrl) 
+        file_size = os.path.getsize(file_path) 
+
     if is_celery:
         column_names = get_column_names(file_path)
         print("Submitting tasks to Celery workers...")
@@ -70,14 +75,20 @@ def process(request):
             "fileUrl": fileUrl,
             "total_records": total_records,
         }, safe=False)
-    elif file_size > 100 * 1024 * 1024:
-        df = load_and_process_file_in_chunks(file_path, desired_types=types)
     else:
         file_extension = os.path.splitext(file_path)[1].lower()  # Get the file extension in lowercase
-
+        processed = False
         try:
+            if fileUrl and fileUrl.startswith('https'):
+                s3_client = S3Client.get_client()
+                bucket_name, file_key = parse_s3_url(fileUrl)
+                obj = s3_client.get_object(Bucket=bucket_name, Key=file_key)
+                df = pd.read_csv(obj['Body'])
+            elif file_size > 100 * 1024 * 1024:
+                df = load_and_process_file_in_chunks(file_path, desired_types=types)
+                processed = True
             # Check the file extension and read the file accordingly
-            if file_extension == ".csv":
+            elif file_extension == ".csv":
                 if is_csv_file_empty(file_path):
                     traceback.print_exc()
                     return JsonResponse(
@@ -116,7 +127,9 @@ def process(request):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        df = infer_and_convert_data_types(df,types)
+
+        if not processed:  # 100MB or less
+            df = infer_and_convert_data_types(df,types)
     global processed_data
     processed_data = df
 
@@ -182,7 +195,8 @@ def view_data(request):
             if(is_Tus):
                 upload = Upload.objects.get(guid=UUID(file_url))
                 file_url = str(upload.uploaded_file)
-            file_url = os.path.join(settings.MEDIA_ROOT,file_url) 
+            if not file_url.startswith('https'):
+                file_url = os.path.join(settings.MEDIA_ROOT,file_url) 
             ranges = get_chunk_and_row_ranges_by_page(file_url, page, page_size)
 
             data = []
@@ -301,12 +315,7 @@ def get_presigned_url(request):
     if not file_name or not file_type:
         return JsonResponse({"error": "Missing required fields: fileName and fileType"}, status=400)
 
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.AWS_REGION,
-    )
+    s3_client = S3Client.get_client()
 
     try:
         presigned_url = s3_client.generate_presigned_url(
