@@ -12,6 +12,7 @@ Key features of the project include:
 - **Continuous Integration and Deployment with GitHub Actions:** Automates the building, testing, and deployment processes. GitHub Actions workflows build the frontend and push it to S3, build the backend and push it to Amazon Elastic Container Registry (ECR), and perform static code analysis using **Pylint** to ensure code quality and adherence to best practices.
 
 - **Large File Uploads with TUS Protocol:** Supports resumable and reliable large file uploads using the TUS protocol, allowing users to upload big datasets seamlessly.
+- **Scalable Cloud Integration:** When deployed on cloud infrastructure, the system seamlessly incorporates S3 presigned URLs, enabling direct and efficient uploads to Amazon S3.
 - **User-Friendly Interface:** Provides an intuitive interface that allows users to upload datasets, view processed data, and interact with the application effortlessly.
 
 # Project Setup Guide
@@ -33,11 +34,7 @@ Before you begin, ensure you have the following software installed:
 - [Redis](https://redis.io/download) (for Option 2)
 ---
 ## Update kubeconfig for Your EKS Cluster
-Run the following AWS CLI command to generate or update the kubeconfig file for your EKS cluster:
 
-```bash
-aws eks --region ap-southeast-2 update-kubeconfig --name my-cluster
-```
 ## Option 1: Running the Project with Docker
 
 If you prefer to use Docker, follow these steps to build and run the Docker containers.
