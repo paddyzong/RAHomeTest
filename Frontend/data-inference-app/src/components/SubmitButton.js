@@ -1,8 +1,10 @@
 import React from 'react';
 import api from '../services/api';
 import StyledButton from './StyledButton';
+import { useAppContext } from './AppContext';
 
-const SubmitButton = ({ buttonText = 'Process', isCelery = false, setIsCelery, types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed }) => {
+const SubmitButton = ({ buttonText = 'Process', isCelery = false}) => {
+  const { setIsCelery, types, fileUrl, isTusUpload, setMessage, setError, setTotalRecords, showTypeSelectors, onProcessComplete, setIsDataProcessed  } = useAppContext();
   const handleSubmit = async () => {
     try {
       if (fileUrl.endsWith(".xlsx") || fileUrl.endsWith(".xls")) {

@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import StyledButton from './StyledButton';
-import { useDataContext } from './DataContext';
+import { useAppContext } from './AppContext';
 
-const DataTable = ({ types, setError, fileUrl,
-  isCelery, isTusUpload, setMessage, setTypes, handleTypeChange, showTypeSelectors, toggleTypeSelectors, refreshTrigger }) => {
-  const { data, setData } = useDataContext();
+const DataTable = () => {
+  const {
+    data,
+    setData,
+    types,
+    setError,
+    fileUrl,
+    isCelery,
+    isTusUpload,
+    setMessage,
+    setTypes,
+    handleTypeChange,
+    showTypeSelectors,
+    toggleTypeSelectors,
+    refreshTrigger
+  } = useAppContext();
   //const [types, setTypes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // Track current page
   const [totalPages, setTotalPages] = useState(1); // Total pages from server response
@@ -25,6 +38,7 @@ const DataTable = ({ types, setError, fileUrl,
     borderRadius: '0.5rem',
     marginTop: '1em',
     marginLeft: '1em',
+    marginRight: '1em',
     width: 'auto'
   };
 
@@ -66,6 +80,7 @@ const DataTable = ({ types, setError, fileUrl,
       setTypes(response.data.types);
       setTotalPages(response.data.total_pages); // Set total pages from response
     } catch (error) {
+      console.error(error);
       setMessage(null);
       setError('Error fetching data.');
     } finally {
