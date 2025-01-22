@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import api from '../services/api';
 import StyledButton from './StyledButton';
 import { Upload } from 'tus-js-client';
-import { useDataContext } from './DataContext';
+import { useAppContext } from './AppContext';
 
-const FileUpload = ({ onUploaded, resetFile, setMessage, setError, setIsDataProcessed }) => {
+const FileUpload = ({  }) => {
+  const { onUploaded, resetFile, setMessage, setError, setIsDataProcessed } = useAppContext();
   const [file, setFile] = useState(null);
-  const { clearData } = useDataContext();
+  const { clearData } = useAppContext();
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
   const IS_AWS = process.env.REACT_APP_IS_AWS === "true";
   const apiBaseUrl = process.env.REACT_APP_API_BASE_URL; // Load from .env
